@@ -3,6 +3,7 @@ import api from "../api";
 import TareaForm from "../components/TareaForm";
 import Tarea from "../components/Tarea";
 import ModalTarea from "../components/ModalTarea";
+import "../styles/Home.css";
 
 function Home() {
     const [tareas, setTareas] = useState([]);
@@ -42,6 +43,11 @@ function Home() {
         });
     };
 
+    // Filtrar las tareas por estado
+    const tareasPendientes = tareas.filter((tarea) => tarea.estado === "pendiente");
+    const tareasEnProgreso = tareas.filter((tarea) => tarea.estado === "en_progreso");
+    const tareasCompletadas = tareas.filter((tarea) => tarea.estado === "completada");
+
     return (
         <div>
             <h2>Lista de Tareas</h2>
@@ -49,9 +55,26 @@ function Home() {
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
             </ModalTarea>
-            {tareas.map((tarea) => (
-                <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} />
-            ))}
+            <div className="tareas-container">
+                <div className="tareas-column">
+                    <h3>Pendientes</h3>
+                    {tareasPendientes.map((tarea) => (
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} />
+                    ))}
+                </div>
+                <div className="tareas-column">
+                    <h3>En Progreso</h3>
+                    {tareasEnProgreso.map((tarea) => (
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} />
+                    ))}
+                </div>
+                <div className="tareas-column">
+                    <h3>Completadas</h3>
+                    {tareasCompletadas.map((tarea) => (
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} />
+                    ))}
+                </div>
+            </div>
         </div>
     );
 }
