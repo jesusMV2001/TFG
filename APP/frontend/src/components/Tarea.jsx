@@ -3,7 +3,7 @@ import "../styles/Tareas.css";
 import TareaForm from "./TareaForm";
 import ModalTarea from "./ModalTarea";
 
-function Tarea({ tarea, onDelete, onUpdate }) {
+function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
     const [isModalOpen, setIsModalOpen] = useState(false);
 
     const handleUpdate = (updatedTarea) => {
@@ -13,7 +13,7 @@ function Tarea({ tarea, onDelete, onUpdate }) {
 
     return (
         <div>
-            <div className="tarea-container">
+            <div className="tarea-container" draggable onDragStart={(e) => onDragStart(e, tarea.id)}>
                 <div className="tarea-titulo">{tarea.titulo}</div>
                 <div className="tarea-descripcion">{tarea.descripcion}</div>
                 <div className="tarea-fecha">{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</div>
