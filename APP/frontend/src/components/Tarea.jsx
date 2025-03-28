@@ -12,13 +12,15 @@ function Tarea({ tarea, onDelete, onUpdate }) {
     };
 
     return (
-        <div className="tarea-container">
-            <div className="tarea-titulo">{tarea.titulo}</div>
-            <div className="tarea-descripcion">{tarea.descripcion}</div>
-            <div className="tarea-fecha">{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</div>
-            <div className="tarea-buttons">
-                <button onClick={() => setIsModalOpen(true)}>Modificar</button>
-                <button onClick={() => onDelete(tarea.id)}>Eliminar</button>
+        <div>
+            <div className="tarea-container">
+                <div className="tarea-titulo">{tarea.titulo}</div>
+                <div className="tarea-descripcion">{tarea.descripcion}</div>
+                <div className="tarea-fecha">{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</div>
+                <div className="tarea-buttons">
+                    <button className="btn-modificar" onClick={() => setIsModalOpen(true)}>Modificar</button>
+                    <button className="btn-borrar" onClick={() => onDelete(tarea.id)}>Eliminar</button>
+                </div>
             </div>
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm
@@ -27,6 +29,7 @@ function Tarea({ tarea, onDelete, onUpdate }) {
                 />
             </ModalTarea>
         </div>
+        
     );
 }
 

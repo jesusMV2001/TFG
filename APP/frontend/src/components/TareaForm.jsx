@@ -2,11 +2,21 @@ import { useState } from "react";
 import "../styles/TareaForm.css";
 
 function TareaForm({ onAddTarea, initialData = {} }) {
+    // Función para formatear la fecha al formato "YYYY-MM-DD"
+    const formatDate = (date) => {
+        if (!date) return "";
+        const d = new Date(date);
+        const year = d.getFullYear();
+        const month = String(d.getMonth() + 1).padStart(2, "0"); // Asegurar que el mes tenga 2 dígitos
+        const day = String(d.getDate()).padStart(2, "0"); // Asegurar que el día tenga 2 dígitos
+        return `${year}-${month}-${day}`;
+    };
+
     const [titulo, setTitulo] = useState(initialData.titulo || "");
     const [descripcion, setDescripcion] = useState(initialData.descripcion || "");
     const [estado, setEstado] = useState(initialData.estado || "pendiente");
     const [prioridad, setPrioridad] = useState(initialData.prioridad || "media");
-    const [fechaVencimiento, setFechaVencimiento] = useState(initialData.fecha_vencimiento || "");
+    const [fechaVencimiento, setFechaVencimiento] = useState(formatDate(initialData.fecha_vencimiento));
     const [error, setError] = useState("");
 
     const handleSubmit = (e) => {

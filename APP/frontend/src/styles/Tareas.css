@@ -1,9 +1,9 @@
 .tarea-container {
     display: flex;
-    flex-direction: column;
+    flex-direction: row; /* Cambiar a fila para alinear contenido y botones horizontalmente */
     justify-content: space-between;
-    align-items: flex-start;
-    padding: 15px;
+    align-items: center; /* Centrar verticalmente el contenido */
+    padding: 10px 15px; /* Reducir el padding */
     margin: 10px 0;
     border: 1px solid #ddd;
     border-radius: 8px;
@@ -18,41 +18,59 @@
 }
 
 .tarea-titulo {
-    font-size: 18px;
+    font-size: 16px; /* Reducir el tamaño de la fuente */
     font-weight: bold;
     color: #333;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .tarea-descripcion {
     font-size: 14px;
     color: #555;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
 .tarea-fecha {
     font-size: 12px;
     color: #888;
-    margin-bottom: 10px;
+    margin-bottom: 5px;
 }
 
-button {
-    align-self: flex-end;
-    padding: 8px 12px;
-    background-color: #ff4d4d;
-    color: white;
+.tarea-buttons {
+    display: flex;
+    gap: 10px; /* Espaciado entre los botones */
+}
+
+.tarea-buttons button {
+    padding: 6px 10px; /* Reducir el tamaño de los botones */
     border: none;
     border-radius: 4px;
-    font-size: 14px;
+    font-size: 12px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
 
-button:hover {
-    background-color: #cc0000;
+/* Botón de modificar (azul) */
+.tarea-buttons .btn-modificar {
+    background-color: #007bff;
+    color: white;
 }
 
-button:focus {
+.tarea-buttons .btn-modificar:hover {
+    background-color: #0056b3;
+}
+
+/* Botón de borrar (rojo) */
+.tarea-buttons .btn-borrar {
+    background-color: #dc3545;
+    color: white;
+}
+
+.tarea-buttons .btn-borrar:hover {
+    background-color: #a71d2a;
+}
+
+.tarea-buttons button:focus {
     outline: none;
-    box-shadow: 0 0 4px rgba(255, 77, 77, 0.8);
+    box-shadow: 0 0 4px rgba(0, 123, 255, 0.8);
 }

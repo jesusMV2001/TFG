@@ -63,7 +63,7 @@ function Home() {
     return (
         <div>
             <h2>Lista de Tareas</h2>
-            <button onClick={() => setIsModalOpen(true)}>Crear Tarea</button>
+            <button className="btn-crear-tarea" onClick={() => setIsModalOpen(true)}>Crear Tarea</button>
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
             </ModalTarea>
