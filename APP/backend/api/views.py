@@ -30,6 +30,14 @@ class TareaDelete(generics.DestroyAPIView):
         user = self.request.user
         return Tarea.objects.filter(usuario=user)
 
+class TareaUpdate(generics.UpdateAPIView):
+    serializer_class = TareaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        user = self.request.user
+        return Tarea.objects.filter(usuario=user)
+
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer

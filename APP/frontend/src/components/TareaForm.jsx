@@ -1,22 +1,21 @@
 import { useState } from "react";
 import "../styles/TareaForm.css";
 
-function TareaForm({ onAddTarea }) {
-    const [titulo, setTitulo] = useState("");
-    const [descripcion, setDescripcion] = useState("");
-    const [estado, setEstado] = useState("pendiente");
-    const [prioridad, setPrioridad] = useState("media");
-    const [fechaVencimiento, setFechaVencimiento] = useState("");
-    const [error, setError] = useState(""); // Estado para manejar errores
+function TareaForm({ onAddTarea, initialData = {} }) {
+    const [titulo, setTitulo] = useState(initialData.titulo || "");
+    const [descripcion, setDescripcion] = useState(initialData.descripcion || "");
+    const [estado, setEstado] = useState(initialData.estado || "pendiente");
+    const [prioridad, setPrioridad] = useState(initialData.prioridad || "media");
+    const [fechaVencimiento, setFechaVencimiento] = useState(initialData.fecha_vencimiento || "");
+    const [error, setError] = useState("");
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        setError(""); // Limpiar errores previos
+        setError("");
 
-        // Validar que la fecha de vencimiento no sea menor a la fecha actual
         const hoy = new Date();
         const fechaSeleccionada = new Date(fechaVencimiento);
-        hoy.setHours(0, 0, 0, 0); // Eliminar la hora para comparar solo la fecha
+        hoy.setHours(0, 0, 0, 0);
 
         if (fechaSeleccionada < hoy) {
             setError("La fecha de vencimiento no puede ser menor a la fecha actual.");
@@ -30,17 +29,12 @@ function TareaForm({ onAddTarea }) {
             prioridad,
             fecha_vencimiento: fechaVencimiento || null,
         };
-        onAddTarea(payload); // Llama a la función pasada como prop
-        setTitulo("");
-        setDescripcion("");
-        setEstado("pendiente");
-        setPrioridad("media");
-        setFechaVencimiento("");
+        onAddTarea(payload);
     };
 
     return (
         <form onSubmit={handleSubmit} className="tarea-form">
-            {error && <p className="tarea-form-error">{error}</p>} {/* Mostrar mensaje de error */}
+            {error && <p className="tarea-form-error">{error}</p>}
             <label htmlFor="titulo" className="tarea-form-label">Título</label>
             <input
                 type="text"
@@ -100,7 +94,7 @@ function TareaForm({ onAddTarea }) {
                 className="tarea-form-input"
             />
 
-            <button type="submit" className="tarea-form-button">Añadir Tarea</button>
+            <button type="submit" className="tarea-form-button">Guardar Cambios</button>
         </form>
     );
 }

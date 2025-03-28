@@ -2,6 +2,9 @@ from django.contrib.auth.models import User
 from rest_framework.test import APITestCase
 from rest_framework import status
 
+
+# Prueba con los dos primeros requisitos hechos por gpt
+
 class UserRegistrationTests(APITestCase):
     def setUp(self):
         # Crear un usuario existente para probar la validación de correo único
