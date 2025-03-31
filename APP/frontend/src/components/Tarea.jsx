@@ -15,7 +15,6 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
         <div>
             <div className="tarea-container" draggable onDragStart={(e) => onDragStart(e, tarea.id)}>
                 <div className="tarea-titulo">{tarea.titulo}</div>
-                <div className="tarea-descripcion">{tarea.descripcion}</div>
                 <div className="tarea-fecha">{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</div>
                 <div className={`tarea-prioridad prioridad-${tarea.prioridad}`}>
                     Prioridad: {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}

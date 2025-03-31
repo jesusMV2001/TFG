@@ -1,44 +1,97 @@
-from django.contrib.auth.models import User
-from rest_framework.test import APITestCase
+import json
+from django.urls import reverse
 from rest_framework import status
+from rest_framework.test import APITestCase
+from django.contrib.auth.models import User
 
-
-# Prueba con los dos primeros requisitos hechos por gpt
 
 class UserRegistrationTests(APITestCase):
-    def setUp(self):
-        # Crear un usuario existente para probar la validación de correo único
-        self.existing_user = User.objects.create_user(
-            username="existinguser",
-            email="existing@example.com",
-            password="password123"
-        )
-        self.register_url = "/api/register/"  # Cambia esta URL si es diferente en tu configuración
 
     def test_user_registration_success(self):
         """
-        Verifica que un usuario pueda registrarse correctamente.
+        Asegura que un nuevo usuario puede registrarse exitosamente.
         """
-        payload = {
-            "username": "newuser",
-            "email": "newuser@example.com",
-            "password": "password123"
+        url = reverse('register')
+        data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': 'testpassword123'
         }
-        response = self.client.post(self.register_url, payload)
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
-        self.assertIn("id", response.data)  # Verifica que el ID del usuario esté en la respuesta
-        self.assertEqual(User.objects.count(), 2)  # Debe haber dos usuarios en la base de datos
+        self.assertEqual(User.objects.count(), 1)
+        self.assertEqual(User.objects.get().username, 'testuser')
+
+    def test_user_registration_empty_fields(self):
+        """
+        Asegura que se retorna un error si algun campo esta vacio
+        """
+        url = reverse('register')
+        data = {
+            'username': '',
+            'email': 'test@example.com',
+            'password': 'testpassword123'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'username': 'testuser',
+            'email': '',
+            'password': 'testpassword123'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+        data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': ''
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+
+    def test_user_registration_username_already_exists(self):
+        """
+        Asegura que se retorna un error si el nombre de usuario ya existe.
+        """
+        User.objects.create_user(username='existinguser', email='existing@example.com', password='password123')
+        url = reverse('register')
+        data = {
+            'username': 'existinguser',
+            'email': 'new@example.com',
+            'password': 'newpassword123'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("El nombre de usuario ya está registrado.", str(response.data))
 
     def test_user_registration_email_already_exists(self):
         """
-        Verifica que no se pueda registrar un usuario con un correo ya existente.
+        Asegura que se retorna un error si el correo electrónico ya existe.
         """
-        payload = {
-            "username": "anotheruser",
-            "email": "existing@example.com",  # Correo ya registrado
-            "password": "password123"
+        User.objects.create_user(username='existinguser', email='existing@example.com', password='password123')
+        url = reverse('register')
+        data = {
+            'username': 'newuser',
+            'email': 'existing@example.com',
+            'password': 'newpassword123'
         }
-        response = self.client.post(self.register_url, payload)
+        response = self.client.post(url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("error", response.data)  # Verifica que el mensaje de error esté presente
-        self.assertEqual(response.data["error"], "El correo electrónico ya está registrado.")
+        self.assertIn("El correo electrónico ya está registrado.", str(response.data))
+
+    def test_user_registration_password_too_short(self):
+        """
+        Asegura que se retorna un error si la contraseña es menor a 8 caracteres.
+        """
+        url = reverse('register')
+        data = {
+            'username': 'testuser',
+            'email': 'test@example.com',
+            'password': 'short'
+        }
+        response = self.client.post(url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn("La contraseña debe tener al menos 8 caracteres.", str(response.data['password']))

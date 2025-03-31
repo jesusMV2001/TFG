@@ -57,13 +57,23 @@ class UserCreateView(generics.CreateAPIView):
     def create(self, request, *args, **kwargs):
         username = request.data.get('username')
         email = request.data.get('email')
+        password = request.data.get('password')
 
+        # Verificar si algún campo está vacío
+        if not username or not email or not password:
+            return Response(
+                {"error": "Todos los campos son obligatorios."},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        # Verificar si el nombre de usuario ya existe
         if User.objects.filter(username=username).exists():
             return Response(
                 {"error": "El nombre de usuario ya está registrado."},
                 status=status.HTTP_400_BAD_REQUEST
             )
 
+        # Verificar si el correo electrónico ya existe
         if User.objects.filter(email=email).exists():
             return Response(
                 {"error": "El correo electrónico ya está registrado."},
