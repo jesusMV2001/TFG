@@ -4,6 +4,7 @@ from rest_framework import generics
 from .serializers import UserSerializer, TareaSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from .models import Tarea
+from django.db import models
 from rest_framework.response import Response
 from rest_framework import status
 
@@ -14,7 +15,17 @@ class TareaListCreate(generics.ListCreateAPIView):
     
     def get_queryset(self):
         user = self.request.user
-        return Tarea.objects.filter(usuario=user)
+        # Ordenar por prioridad (alta, media, baja) y luego por fecha de vencimiento ascendente
+        return Tarea.objects.filter(usuario=user).order_by(
+            models.Case(
+                models.When(prioridad='alta', then=0),
+                models.When(prioridad='media', then=1),
+                models.When(prioridad='baja', then=2),
+                default=3,
+                output_field=models.IntegerField()
+            ),
+            'fecha_vencimiento'
+        )
     
     def perform_create(self, serializer):
         if serializer.is_valid():

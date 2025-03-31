@@ -74,3 +74,22 @@
     outline: none;
     box-shadow: 0 0 4px rgba(0, 123, 255, 0.8);
 }
+
+.tarea-prioridad {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 5px;
+    text-transform: capitalize;
+}
+
+.prioridad-alta {
+    color: #dc3545; /* Rojo para alta prioridad */
+}
+
+.prioridad-media {
+    color: #ffc107; /* Amarillo para prioridad media */
+}
+
+.prioridad-baja {
+    color: #28a745; /* Verde para baja prioridad */
+}

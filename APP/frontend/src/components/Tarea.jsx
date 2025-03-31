@@ -17,6 +17,9 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                 <div className="tarea-titulo">{tarea.titulo}</div>
                 <div className="tarea-descripcion">{tarea.descripcion}</div>
                 <div className="tarea-fecha">{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</div>
+                <div className={`tarea-prioridad prioridad-${tarea.prioridad}`}>
+                    Prioridad: {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}
+                </div>
                 <div className="tarea-buttons">
                     <button className="btn-modificar" onClick={() => setIsModalOpen(true)}>Modificar</button>
                     <button className="btn-borrar" onClick={() => onDelete(tarea.id)}>Eliminar</button>
@@ -29,7 +32,6 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                 />
             </ModalTarea>
         </div>
-        
     );
 }
 

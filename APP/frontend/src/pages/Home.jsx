@@ -88,11 +88,26 @@ function Home() {
     const handleDragOver = (e) => {
         e.preventDefault(); // Permitir el drop
     };
-
-    // Filtrar las tareas por estado
-    const tareasPendientes = tareas.filter((tarea) => tarea.estado === "pendiente");
-    const tareasEnProgreso = tareas.filter((tarea) => tarea.estado === "en_progreso");
-    const tareasCompletadas = tareas.filter((tarea) => tarea.estado === "completada");
+    
+    const sortTareas = (tareas) => {
+        const prioridadOrden = { alta: 0, media: 1, baja: 2 };
+    
+        return tareas.sort((a, b) => {
+            // Ordenar por prioridad
+            if (prioridadOrden[a.prioridad] !== prioridadOrden[b.prioridad]) {
+                return prioridadOrden[a.prioridad] - prioridadOrden[b.prioridad];
+            }
+            // Si tienen la misma prioridad, ordenar por fecha de vencimiento
+            const fechaA = new Date(a.fecha_vencimiento);
+            const fechaB = new Date(b.fecha_vencimiento);
+            return fechaA - fechaB;
+        });
+    };
+    
+    // Filtrar y ordenar las tareas por estado
+    const tareasPendientes = sortTareas(tareas.filter((tarea) => tarea.estado === "pendiente"));
+    const tareasEnProgreso = sortTareas(tareas.filter((tarea) => tarea.estado === "en_progreso"));
+    const tareasCompletadas = sortTareas(tareas.filter((tarea) => tarea.estado === "completada"));
 
     return (
         <div>
