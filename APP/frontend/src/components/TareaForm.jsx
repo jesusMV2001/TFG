@@ -1,5 +1,4 @@
 import { useState, useEffect } from "react";
-import "../styles/TareaForm.css";
 import api from "../api";
 
 function TareaForm({ onAddTarea, initialData = {} }) {
@@ -94,78 +93,105 @@ function TareaForm({ onAddTarea, initialData = {} }) {
     };
 
     return (
-        <form onSubmit={handleSubmit} className="tarea-form">
-            {error && <p className="tarea-form-error">{error}</p>}
-            <label htmlFor="titulo" className="tarea-form-label">Título</label>
-            <input
-                type="text"
-                id="titulo"
-                name="titulo"
-                placeholder="Título"
-                required
-                value={titulo}
-                onChange={(e) => setTitulo(e.target.value)}
-                className="tarea-form-input"
-            />
+        <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
+            {error && (
+                <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
+                    {error}
+                </p>
+            )}
+            
+            <div className="space-y-1">
+                <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">
+                    Título
+                </label>
+                <input
+                    type="text"
+                    id="titulo"
+                    name="titulo"
+                    placeholder="Título"
+                    required
+                    value={titulo}
+                    onChange={(e) => setTitulo(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                />
+            </div>
 
-            <label htmlFor="descripcion" className="tarea-form-label">Descripción</label>
-            <textarea
-                id="descripcion"
-                name="descripcion"
-                placeholder="Descripción"
-                value={descripcion}
-                onChange={(e) => setDescripcion(e.target.value)}
-                className="tarea-form-textarea"
-            />
+            <div className="space-y-1">
+                <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
+                    Descripción
+                </label>
+                <textarea
+                    id="descripcion"
+                    name="descripcion"
+                    placeholder="Descripción"
+                    value={descripcion}
+                    onChange={(e) => setDescripcion(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50 min-h-[80px] max-h-[150px] resize-y"
+                />
+            </div>
 
-            <label htmlFor="estado" className="tarea-form-label">Estado</label>
-            <select
-                id="estado"
-                name="estado"
-                value={estado}
-                onChange={(e) => setEstado(e.target.value)}
-                className="tarea-form-select"
-            >
-                <option value="pendiente">Pendiente</option>
-                <option value="en_progreso">En Progreso</option>
-                <option value="completada">Completada</option>
-            </select>
+            <div className="space-y-1">
+                <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
+                    Estado
+                </label>
+                <select
+                    id="estado"
+                    name="estado"
+                    value={estado}
+                    onChange={(e) => setEstado(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                >
+                    <option value="pendiente">Pendiente</option>
+                    <option value="en_progreso">En Progreso</option>
+                    <option value="completada">Completada</option>
+                </select>
+            </div>
 
-            <label htmlFor="prioridad" className="tarea-form-label">Prioridad</label>
-            <select
-                id="prioridad"
-                name="prioridad"
-                value={prioridad}
-                onChange={(e) => setPrioridad(e.target.value)}
-                className="tarea-form-select"
-            >
-                <option value="alta">Alta</option>
-                <option value="media">Media</option>
-                <option value="baja">Baja</option>
-            </select>
+            <div className="space-y-1">
+                <label htmlFor="prioridad" className="block text-sm font-medium text-gray-700">
+                    Prioridad
+                </label>
+                <select
+                    id="prioridad"
+                    name="prioridad"
+                    value={prioridad}
+                    onChange={(e) => setPrioridad(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                >
+                    <option value="alta">Alta</option>
+                    <option value="media">Media</option>
+                    <option value="baja">Baja</option>
+                </select>
+            </div>
 
-            <label htmlFor="fechaVencimiento" className="tarea-form-label">Fecha de Vencimiento</label>
-            <input
-                type="date"
-                id="fechaVencimiento"
-                name="fechaVencimiento"
-                value={fechaVencimiento}
-                required
-                onChange={(e) => setFechaVencimiento(e.target.value)}
-                className="tarea-form-input"
-            />
+            <div className="space-y-1">
+                <label htmlFor="fechaVencimiento" className="block text-sm font-medium text-gray-700">
+                    Fecha de Vencimiento
+                </label>
+                <input
+                    type="date"
+                    id="fechaVencimiento"
+                    name="fechaVencimiento"
+                    value={fechaVencimiento}
+                    required
+                    onChange={(e) => setFechaVencimiento(e.target.value)}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
+                />
+            </div>
 
             {initialData.id && (
-                <>
-                    <label htmlFor="etiquetas" className="tarea-form-label">Etiquetas</label>
-                    <ul>
+                <div className="space-y-4">
+                    <label className="block text-sm font-medium text-gray-700">
+                        Etiquetas
+                    </label>
+                    <ul className="flex flex-wrap gap-2 p-2 border border-gray-200 rounded-lg max-h-32 overflow-y-auto">
                         {todasEtiquetas.map((etiqueta) => (
-                            <li key={etiqueta.id}>
+                            <li key={etiqueta.id} className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-md text-sm">
                                 {etiqueta.nombre}
                                 <button
                                     type="button"
                                     onClick={() => handleEliminarEtiqueta(etiqueta.id)}
-                                    className="eliminar-etiqueta-button"
+                                    className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
                                 >
                                     Eliminar
                                 </button>
@@ -173,22 +199,31 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                         ))}
                     </ul>
 
-                    <div className="crear-etiqueta">
+                    <div className="flex gap-3">
                         <input
                             type="text"
                             placeholder="Nueva etiqueta"
                             value={nuevaEtiqueta}
                             onChange={(e) => setNuevaEtiqueta(e.target.value)}
-                            className="tarea-form-input"
+                            className="flex-1 px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-gray-50"
                         />
-                        <button type="button" onClick={handleCrearEtiqueta} className="tarea-form-button">
+                        <button
+                            type="button"
+                            onClick={handleCrearEtiqueta}
+                            className="px-4 py-2 bg-green-500 text-white rounded-lg hover:bg-green-600 transition-colors whitespace-nowrap"
+                        >
                             Crear Etiqueta
                         </button>
                     </div>
-                </>
+                </div>
             )}
 
-            <button type="submit" className="tarea-form-button">Guardar Cambios</button>
+            <button
+                type="submit"
+                className="self-end px-6 py-2 bg-blue-500 text-white font-semibold rounded-lg hover:bg-blue-600 transition-colors mt-4 sticky bottom-6"
+            >
+                Guardar Cambios
+            </button>
         </form>
     );
 }

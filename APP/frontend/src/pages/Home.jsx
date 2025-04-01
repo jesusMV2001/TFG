@@ -3,7 +3,6 @@ import api from "../api";
 import TareaForm from "../components/TareaForm";
 import Tarea from "../components/Tarea";
 import ModalTarea from "../components/ModalTarea";
-import "../styles/Home.css";
 
 function Home() {
     const [tareas, setTareas] = useState([]);
@@ -131,21 +130,26 @@ function Home() {
     const tareasCompletadas = sortTareas(filteredTareas.filter((tarea) => tarea.estado === "completada"));
 
     return (
-        <div>
-            <h2>Lista de Tareas</h2>
+        <div className="container mx-auto px-4 py-8">
+            <h2 className="text-2xl font-bold text-gray-800 mb-6">Lista de Tareas</h2>
+            
+            {/* Search input */}
             <input
                 type="text"
                 placeholder="Buscar tareas..."
                 value={searchText}
                 onChange={(e) => setSearchText(e.target.value)}
-                className="search-input"
+                className="w-full max-w-md px-4 py-2 mb-6 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
             />
-            <div className="sort-buttons">
+            
+            {/* Sort buttons */}
+            <div className="flex gap-4 mb-6">
                 <button
                     onClick={() => {
                         setSortType("prioridad");
                         toggleSortDirection();
                     }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                     Ordenar por Prioridad {sortDirection === "asc" ? "▲" : "▼"}
                 </button>
@@ -154,32 +158,85 @@ function Home() {
                         setSortType("fecha");
                         toggleSortDirection();
                     }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
                     Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
                 </button>
             </div>
-            <button className="btn-crear-tarea" onClick={() => setIsModalOpen(true)}>Crear Tarea</button>
+            
+            {/* Create task button */}
+            <button 
+                onClick={() => setIsModalOpen(true)}
+                className="px-6 py-3 mb-8 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition-all transform hover:-translate-y-0.5"
+            >
+                Crear Tarea
+            </button>
+            
+            {/* Create task modal */}
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
             </ModalTarea>
-            <div className="tareas-container">
-                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "pendiente")}>
-                    <h3>Pendientes</h3>
-                    {tareasPendientes.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
-                    ))}
+            
+            {/* Tasks container */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                {/* Pending tasks column */}
+                <div 
+                    className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
+                    onDragOver={handleDragOver} 
+                    onDrop={(e) => handleDrop(e, "pendiente")}
+                >
+                    <h3 className="text-lg font-semibold text-center mb-4">Pendientes</h3>
+                    <div className="space-y-4">
+                        {tareasPendientes.map((tarea) => (
+                            <Tarea 
+                                key={tarea.id} 
+                                tarea={tarea} 
+                                onDelete={deleteTarea} 
+                                onDragStart={handleDragStart} 
+                                onUpdate={updateTarea} 
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "en_progreso")}>
-                    <h3>En Progreso</h3>
-                    {tareasEnProgreso.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
-                    ))}
+
+                {/* In progress tasks column */}
+                <div 
+                    className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
+                    onDragOver={handleDragOver} 
+                    onDrop={(e) => handleDrop(e, "en_progreso")}
+                >
+                    <h3 className="text-lg font-semibold text-center mb-4">En Progreso</h3>
+                    <div className="space-y-4">
+                        {tareasEnProgreso.map((tarea) => (
+                            <Tarea 
+                                key={tarea.id} 
+                                tarea={tarea} 
+                                onDelete={deleteTarea} 
+                                onDragStart={handleDragStart} 
+                                onUpdate={updateTarea} 
+                            />
+                        ))}
+                    </div>
                 </div>
-                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "completada")}>
-                    <h3>Completadas</h3>
-                    {tareasCompletadas.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
-                    ))}
+
+                {/* Completed tasks column */}
+                <div 
+                    className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
+                    onDragOver={handleDragOver} 
+                    onDrop={(e) => handleDrop(e, "completada")}
+                >
+                    <h3 className="text-lg font-semibold text-center mb-4">Completadas</h3>
+                    <div className="space-y-4">
+                        {tareasCompletadas.map((tarea) => (
+                            <Tarea 
+                                key={tarea.id} 
+                                tarea={tarea} 
+                                onDelete={deleteTarea} 
+                                onDragStart={handleDragStart} 
+                                onUpdate={updateTarea} 
+                            />
+                        ))}
+                    </div>
                 </div>
             </div>
         </div>
