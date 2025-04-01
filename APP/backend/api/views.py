@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
-from rest_framework import generics
-from .serializers import UserSerializer, TareaSerializer, HistorialCambiosSerializer
+from rest_framework import generics, serializers
+from .serializers import UserSerializer, TareaSerializer, HistorialCambiosSerializer, EtiquetaSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import Tarea, HistorialCambios
+from .models import Tarea, HistorialCambios, Etiqueta
 from django.db import models
 from rest_framework.response import Response
 from rest_framework import status
@@ -117,6 +117,53 @@ class HistorialCambiosList(generics.ListAPIView):
 
     def get_queryset(self):
         tarea_id = self.kwargs['tarea_id']
-        d = HistorialCambios.objects.filter(tarea_id=tarea_id).order_by('-fecha_cambio')
-        print(d)
-        return d
+        return HistorialCambios.objects.filter(tarea_id=tarea_id).order_by('-fecha_cambio')
+    
+class EtiquetaListCreate(generics.ListCreateAPIView):
+    serializer_class = EtiquetaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Devuelve las etiquetas asociadas a una tarea específica
+        tarea_id = self.request.query_params.get('tarea_id')
+        if tarea_id:
+            return Etiqueta.objects.filter(tarea_id=tarea_id)
+        return Etiqueta.objects.none()
+
+    def perform_create(self, serializer):
+        # Asocia la etiqueta a una tarea específica
+        tarea_id = self.request.data.get('tarea_id')
+        nombre = self.request.data.get('nombre')
+
+        # Verificar si la tarea existe
+        try:
+            tarea = Tarea.objects.get(id=tarea_id)
+        except Tarea.DoesNotExist:
+            raise serializers.ValidationError({"error": "La tarea no existe."})
+
+        # Verificar si ya existe una etiqueta con el mismo nombre en la tarea
+        if Etiqueta.objects.filter(tarea=tarea, nombre=nombre).exists():
+            raise serializers.ValidationError({"error": "Ya existe una etiqueta con este nombre en esta tarea."})
+
+        # Crear la etiqueta si no existe
+        serializer.save(tarea=tarea)
+        
+class EtiquetaDelete(generics.DestroyAPIView):
+    serializer_class = EtiquetaSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        # Devuelve las etiquetas asociadas a una tarea específica
+        tarea_id = self.request.query_params.get('tarea_id')
+        if tarea_id:
+            return Etiqueta.objects.filter(tarea_id=tarea_id)
+        return Etiqueta.objects.none()
+
+    def delete(self, request, *args, **kwargs):
+        etiqueta_id = kwargs.get('pk')
+        try:
+            etiqueta = Etiqueta.objects.get(id=etiqueta_id)
+            etiqueta.delete()
+            return Response({"message": "Etiqueta eliminada correctamente."}, status=status.HTTP_204_NO_CONTENT)
+        except Etiqueta.DoesNotExist:
+            return Response({"error": "Etiqueta no encontrada."}, status=status.HTTP_404_NOT_FOUND)

@@ -1,14 +1,14 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/TareaForm.css";
+import api from "../api";
 
 function TareaForm({ onAddTarea, initialData = {} }) {
-    // Función para formatear la fecha al formato "YYYY-MM-DD"
     const formatDate = (date) => {
         if (!date) return "";
         const d = new Date(date);
         const year = d.getFullYear();
-        const month = String(d.getMonth() + 1).padStart(2, "0"); // Asegurar que el mes tenga 2 dígitos
-        const day = String(d.getDate()).padStart(2, "0"); // Asegurar que el día tenga 2 dígitos
+        const month = String(d.getMonth() + 1).padStart(2, "0");
+        const day = String(d.getDate()).padStart(2, "0");
         return `${year}-${month}-${day}`;
     };
 
@@ -17,7 +17,23 @@ function TareaForm({ onAddTarea, initialData = {} }) {
     const [estado, setEstado] = useState(initialData.estado || "pendiente");
     const [prioridad, setPrioridad] = useState(initialData.prioridad || "media");
     const [fechaVencimiento, setFechaVencimiento] = useState(formatDate(initialData.fecha_vencimiento));
+    const [etiquetas, setEtiquetas] = useState(initialData.etiquetas || []);
+    const [todasEtiquetas, setTodasEtiquetas] = useState([]);
+    const [nuevaEtiqueta, setNuevaEtiqueta] = useState("");
     const [error, setError] = useState("");
+
+    useEffect(() => {
+        if (initialData.id) {
+            api.get(`/api/etiquetas/?tarea_id=${initialData.id}`)
+                .then((response) => {
+                    setTodasEtiquetas(response.data);
+                })
+                .catch((error) => {
+                    console.error("Error al obtener etiquetas:", error);
+                    setError("Error al cargar las etiquetas.");
+                });
+        }
+    }, [initialData.id]);
 
     const handleSubmit = (e) => {
         e.preventDefault();
@@ -38,8 +54,43 @@ function TareaForm({ onAddTarea, initialData = {} }) {
             estado,
             prioridad,
             fecha_vencimiento: fechaVencimiento || null,
+            etiquetas,
         };
         onAddTarea(payload);
+    };
+
+    const handleEtiquetaChange = (e) => {
+        const selectedOptions = Array.from(e.target.selectedOptions);
+        const selectedIds = selectedOptions.map((option) => option.value);
+        setEtiquetas(selectedIds);
+    };
+
+    const handleCrearEtiqueta = () => {
+        if (!nuevaEtiqueta.trim()) {
+            setError("El nombre de la etiqueta no puede estar vacío.");
+            return;
+        }
+    
+        api.post("/api/etiquetas/", { nombre: nuevaEtiqueta, tarea_id: initialData.id })
+            .then((response) => {
+                setTodasEtiquetas((prev) => [...prev, response.data]);
+                setNuevaEtiqueta("");
+            })
+            .catch((error) => {
+                console.error("Error al crear etiqueta:", error);
+                setError("No se pudo crear la etiqueta.");
+            });
+    };
+
+    const handleEliminarEtiqueta = (etiquetaId) => {
+        api.delete(`/api/etiquetas/delete/${etiquetaId}/`)
+            .then(() => {
+                setTodasEtiquetas((prev) => prev.filter((etiqueta) => etiqueta.id !== etiquetaId));
+            })
+            .catch((error) => {
+                console.error("Error al eliminar etiqueta:", error);
+                setError("No se pudo eliminar la etiqueta.");
+            });
     };
 
     return (
@@ -103,6 +154,39 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 onChange={(e) => setFechaVencimiento(e.target.value)}
                 className="tarea-form-input"
             />
+
+            {initialData.id && (
+                <>
+                    <label htmlFor="etiquetas" className="tarea-form-label">Etiquetas</label>
+                    <ul>
+                        {todasEtiquetas.map((etiqueta) => (
+                            <li key={etiqueta.id}>
+                                {etiqueta.nombre}
+                                <button
+                                    type="button"
+                                    onClick={() => handleEliminarEtiqueta(etiqueta.id)}
+                                    className="eliminar-etiqueta-button"
+                                >
+                                    Eliminar
+                                </button>
+                            </li>
+                        ))}
+                    </ul>
+
+                    <div className="crear-etiqueta">
+                        <input
+                            type="text"
+                            placeholder="Nueva etiqueta"
+                            value={nuevaEtiqueta}
+                            onChange={(e) => setNuevaEtiqueta(e.target.value)}
+                            className="tarea-form-input"
+                        />
+                        <button type="button" onClick={handleCrearEtiqueta} className="tarea-form-button">
+                            Crear Etiqueta
+                        </button>
+                    </div>
+                </>
+            )}
 
             <button type="submit" className="tarea-form-button">Guardar Cambios</button>
         </form>

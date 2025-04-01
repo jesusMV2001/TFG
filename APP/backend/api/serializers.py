@@ -42,7 +42,7 @@ class TareaSerializer(serializers.ModelSerializer):
 class EtiquetaSerializer(serializers.ModelSerializer):
     class Meta:
         model = Etiqueta
-        fields = ['id', 'nombre'] 
+        fields = ['id', 'nombre', 'tarea'] 
 
 
 class HistorialCambiosSerializer(serializers.ModelSerializer):

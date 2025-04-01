@@ -49,27 +49,35 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                 />
             </ModalTarea>
             <ModalTarea isOpen={isModalVerOpen} onClose={() => setIsModalVerOpen(false)}>
-                <h2>Detalles de la Tarea</h2>
-                <p><strong>Título:</strong> {tarea.titulo}</p>
-                <p><strong>Descripción:</strong> {tarea.descripcion || "Sin descripción"}</p>
-                <p><strong>Fecha de Creación:</strong> {new Date(tarea.fecha_creacion).toLocaleDateString()}</p>
-                <p><strong>Fecha de Vencimiento:</strong> {new Date(tarea.fecha_vencimiento).toLocaleDateString()}</p>
-                <p><strong>Prioridad:</strong> {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}</p>
-                <p><strong>Estado:</strong> {tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}</p>
-                <h3>Historial de Cambios</h3>
-                {historial.length > 0 ? (
-                    <ul>
-                        {historial.map((cambio) => (
-                            <li key={cambio.id}>
-                                <p><strong>Acción:</strong> {cambio.accion}</p>
-                                <p><strong>Fecha:</strong> {new Date(cambio.fecha_cambio).toLocaleDateString()}</p>
-                                <p><strong>Usuario:</strong> {cambio.usuario || "Desconocido"}</p>
-                            </li>
-                        ))}
-                    </ul>
-                ) : (
-                    <p>No hay historial de cambios.</p>
-                )}
+                <div className="tarea-detalles">
+                    <h2>Detalles de la Tarea</h2>
+                    <div className="info-section">
+                        <p><strong>Título:</strong> {tarea.titulo}</p>
+                        <p><strong>Estado:</strong> {tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}</p>
+                        <p><strong>Prioridad:</strong> {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}</p>
+                        <p><strong>Fecha Creación:</strong> {new Date(tarea.fecha_creacion).toLocaleDateString()}</p>
+                        <p><strong>Vencimiento:</strong> {new Date(tarea.fecha_vencimiento).toLocaleDateString()}</p>
+                    </div>
+                    
+                    <div className="info-section">
+                        <p><strong>Descripción:</strong> {tarea.descripcion || "Sin descripción"}</p>
+                    </div>
+
+                    <h3>Historial de Cambios</h3>
+                    {historial.length > 0 ? (
+                        <ul>
+                            {historial.map((cambio) => (
+                                <li key={cambio.id}>
+                                    <p><strong>Acción:</strong> {cambio.accion}</p>
+                                    <p><strong>Fecha:</strong> {new Date(cambio.fecha_cambio).toLocaleDateString()}</p>
+                                    <p><strong>Usuario:</strong> {cambio.usuario || "Desconocido"}</p>
+                                </li>
+                            ))}
+                        </ul>
+                    ) : (
+                        <p className="no-historial">No hay historial de cambios.</p>
+                    )}
+                </div>
             </ModalTarea>
         </div>
     );
