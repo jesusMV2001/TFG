@@ -10,6 +10,7 @@ function Home() {
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
     const [sortType, setSortType] = useState("prioridad"); // Estado para el tipo de ordenamiento
     const [sortDirection, setSortDirection] = useState("asc"); // Estado para la dirección del orden
+    const [searchText, setSearchText] = useState(""); // Estado para el texto de búsqueda
 
     useEffect(() => {
         getTareas();
@@ -102,32 +103,45 @@ function Home() {
         });
     };
 
+    // Filtrar las tareas por texto de búsqueda
+    const filteredTareas = tareas.filter((tarea) =>
+        tarea.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
+        (tarea.descripcion && tarea.descripcion.toLowerCase().includes(searchText.toLowerCase()))
+    );
+
     // Filtrar y ordenar las tareas por estado
-    const tareasPendientes = sortTareas(tareas.filter((tarea) => tarea.estado === "pendiente"));
-    const tareasEnProgreso = sortTareas(tareas.filter((tarea) => tarea.estado === "en_progreso"));
-    const tareasCompletadas = sortTareas(tareas.filter((tarea) => tarea.estado === "completada"));
+    const tareasPendientes = sortTareas(filteredTareas.filter((tarea) => tarea.estado === "pendiente"));
+    const tareasEnProgreso = sortTareas(filteredTareas.filter((tarea) => tarea.estado === "en_progreso"));
+    const tareasCompletadas = sortTareas(filteredTareas.filter((tarea) => tarea.estado === "completada"));
 
     return (
         <div>
             <h2>Lista de Tareas</h2>
+            <input
+                type="text"
+                placeholder="Buscar tareas..."
+                value={searchText}
+                onChange={(e) => setSearchText(e.target.value)}
+                className="search-input"
+            />
             <div className="sort-buttons">
-            <button
-                onClick={() => {
-                    setSortType("prioridad");
-                    toggleSortDirection();
-                }}
-            >
-                Ordenar por Prioridad {sortDirection === "asc" ? "▲" : "▼"}
-            </button>
-            <button
-                onClick={() => {
-                    setSortType("fecha");
-                    toggleSortDirection();
-                }}
-            >
-                Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
-            </button>
-        </div>
+                <button
+                    onClick={() => {
+                        setSortType("prioridad");
+                        toggleSortDirection();
+                    }}
+                >
+                    Ordenar por Prioridad {sortDirection === "asc" ? "▲" : "▼"}
+                </button>
+                <button
+                    onClick={() => {
+                        setSortType("fecha");
+                        toggleSortDirection();
+                    }}
+                >
+                    Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
+                </button>
+            </div>
             <button className="btn-crear-tarea" onClick={() => setIsModalOpen(true)}>Crear Tarea</button>
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
