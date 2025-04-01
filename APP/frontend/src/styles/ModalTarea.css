@@ -1,28 +1,42 @@
-/* filepath: /home/jesus/python/TFG/APP/frontend/src/styles/Modal.css */
-
+/* Fondo del modal */
 .modal-overlay {
     position: fixed;
     top: 0;
     left: 0;
     width: 100%;
     height: 100%;
-    background-color: rgba(0, 0, 0, 0.5);
+    background-color: rgba(0, 0, 0, 0.5); /* Fondo semitransparente */
     display: flex;
     justify-content: center;
     align-items: center;
     z-index: 1000;
 }
 
+/* Contenedor del contenido del modal */
 .modal-content {
     background: white;
     padding: 20px;
     border-radius: 8px;
     width: 90%;
-    max-width: 500px;
+    max-width: 600px;
     box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
     position: relative;
+    animation: fadeIn 0.3s ease-in-out;
 }
 
+/* Animación de entrada */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.9);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}
+
+/* Botón de cerrar */
 .modal-close {
     position: absolute;
     top: 10px;
@@ -37,4 +51,59 @@
 
 .modal-close:hover {
     color: #007bff; /* Cambia el color al hacer hover */
+}
+
+/* Título del modal */
+.modal-content h2 {
+    font-size: 24px;
+    font-weight: bold;
+    color: #333;
+    margin-bottom: 20px;
+    text-align: center;
+}
+
+/* Información de la tarea */
+.modal-content p {
+    font-size: 16px;
+    color: #555;
+    margin-bottom: 10px;
+    line-height: 1.5;
+}
+
+/* Sección del historial */
+.modal-content h3 {
+    font-size: 20px;
+    font-weight: bold;
+    color: #333;
+    margin-top: 20px;
+    margin-bottom: 10px;
+}
+
+/* Lista del historial */
+.modal-content ul {
+    list-style-type: none;
+    padding: 0;
+    margin: 0;
+}
+
+.modal-content li {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Texto dentro de cada elemento del historial */
+.modal-content li p {
+    margin: 5px 0;
+    font-size: 14px;
+    color: #555;
+}
+
+/* Resaltar etiquetas importantes */
+.modal-content strong {
+    color: #333;
+    font-weight: bold;
 }

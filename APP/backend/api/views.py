@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics
-from .serializers import UserSerializer, TareaSerializer
+from .serializers import UserSerializer, TareaSerializer, HistorialCambiosSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import Tarea
+from .models import Tarea, HistorialCambios
 from django.db import models
 from rest_framework.response import Response
 from rest_framework import status
@@ -49,6 +49,35 @@ class TareaUpdate(generics.UpdateAPIView):
         user = self.request.user
         return Tarea.objects.filter(usuario=user)
 
+    def perform_update(self, serializer):
+        # Obtener la tarea antes de actualizar
+        tarea_anterior = self.get_object()
+        usuario = self.request.user
+
+        # Guardar los cambios en la tarea
+        tarea_actualizada = serializer.save()
+
+        # Comparar los campos para registrar los cambios
+        cambios = []
+        if tarea_anterior.titulo != tarea_actualizada.titulo:
+            cambios.append(f"Título: '{tarea_anterior.titulo}' -> '{tarea_actualizada.titulo}'")
+        if tarea_anterior.descripcion != tarea_actualizada.descripcion:
+            cambios.append(f"Descripción actualizada")
+        if tarea_anterior.estado != tarea_actualizada.estado:
+            cambios.append(f"Estado: '{tarea_anterior.estado}' -> '{tarea_actualizada.estado}'")
+        if tarea_anterior.prioridad != tarea_actualizada.prioridad:
+            cambios.append(f"Prioridad: '{tarea_anterior.prioridad}' -> '{tarea_actualizada.prioridad}'")
+        if tarea_anterior.fecha_vencimiento != tarea_actualizada.fecha_vencimiento:
+            cambios.append(f"Fecha de vencimiento: '{tarea_anterior.fecha_vencimiento}' -> '{tarea_actualizada.fecha_vencimiento}'")
+
+        # Registrar el historial de cambios
+        if cambios:
+            HistorialCambios.objects.create(
+                tarea=tarea_actualizada,
+                accion="; ".join(cambios),
+                usuario=usuario
+            )
+
 class UserCreateView(generics.CreateAPIView):
     queryset = User.objects.all()
     serializer_class = UserSerializer
@@ -81,3 +110,13 @@ class UserCreateView(generics.CreateAPIView):
             )
 
         return super().create(request, *args, **kwargs)
+
+class HistorialCambiosList(generics.ListAPIView):
+    serializer_class = HistorialCambiosSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        tarea_id = self.kwargs['tarea_id']
+        d = HistorialCambios.objects.filter(tarea_id=tarea_id).order_by('-fecha_cambio')
+        print(d)
+        return d

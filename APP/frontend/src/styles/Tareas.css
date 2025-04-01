@@ -93,3 +93,42 @@
 .prioridad-baja {
     color: #28a745; /* Verde para baja prioridad */
 }
+
+/* Botón de ver detalles */
+.tarea-buttons .btn-ver {
+    padding: 6px 10px;
+    background-color: #17a2b8; /* Azul claro */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 12px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.tarea-buttons .btn-ver:hover {
+    background-color: #138496; /* Azul más oscuro */
+}
+
+.tarea-details {
+    margin-top: 10px;
+}
+
+.tarea-details h3 {
+    margin-top: 20px;
+    font-size: 18px;
+    color: #333;
+}
+
+.tarea-details ul {
+    list-style-type: none;
+    padding: 0;
+}
+
+.tarea-details li {
+    margin-bottom: 10px;
+    padding: 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    background-color: #f9f9f9;
+}

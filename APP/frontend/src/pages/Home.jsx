@@ -46,6 +46,22 @@ function Home() {
         });
     };
 
+    const updateTarea = async (id, updatedTarea) => {
+        api.put(`/api/tareas/update/${id}/`, updatedTarea).then((response) => {
+            if (response.status === 200) {
+                alert("Tarea actualizada");
+                setTareas((prevTareas) =>
+                    prevTareas.map((t) =>
+                        t.id === id ? { ...t, ...updatedTarea } : t
+                    )
+                );
+            }
+        }).catch((error) => {
+            alert("Error al actualizar la tarea");
+            console.log(error);
+        });
+    };
+
     const updateTareaEstado = async (id, nuevoEstado) => {
         const tarea = tareas.find((t) => t.id === id);
         if (!tarea) return;
@@ -150,19 +166,19 @@ function Home() {
                 <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "pendiente")}>
                     <h3>Pendientes</h3>
                     {tareasPendientes.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
                     ))}
                 </div>
                 <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "en_progreso")}>
                     <h3>En Progreso</h3>
                     {tareasEnProgreso.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
                     ))}
                 </div>
                 <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "completada")}>
                     <h3>Completadas</h3>
                     {tareasCompletadas.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} onUpdate={updateTarea} />
                     ))}
                 </div>
             </div>
