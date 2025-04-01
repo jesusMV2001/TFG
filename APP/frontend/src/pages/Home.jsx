@@ -8,6 +8,8 @@ import "../styles/Home.css";
 function Home() {
     const [tareas, setTareas] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
+    const [sortType, setSortType] = useState("prioridad"); // Estado para el tipo de ordenamiento
+    const [sortDirection, setSortDirection] = useState("asc"); // Estado para la dirección del orden
 
     useEffect(() => {
         getTareas();
@@ -43,7 +45,6 @@ function Home() {
         });
     };
 
-    // Actualizar el estado de la tarea al arrastrar
     const updateTareaEstado = async (id, nuevoEstado) => {
         const tarea = tareas.find((t) => t.id === id);
         if (!tarea) return;
@@ -63,19 +64,6 @@ function Home() {
         });
     };
 
-    // Actualizar la tarea (boton modificar)
-    const updateTarea = async (id, updatedTarea) => {
-        api.put(`/api/tareas/update/${id}/`, updatedTarea).then((response) => {
-            if (response.status === 200) {
-                alert("Tarea actualizada");
-                getTareas(); // Actualizar la lista de tareas
-            }
-        }).catch((error) => {
-            alert("Error al actualizar la tarea");
-            console.log(error);
-        });
-    };
-
     const handleDragStart = (e, id) => {
         e.dataTransfer.setData("tareaId", id);
     };
@@ -88,22 +76,32 @@ function Home() {
     const handleDragOver = (e) => {
         e.preventDefault(); // Permitir el drop
     };
-    
+
+    const toggleSortDirection = () => {
+        setSortDirection((prevDirection) => (prevDirection === "asc" ? "desc" : "asc"));
+    };
+
     const sortTareas = (tareas) => {
         const prioridadOrden = { alta: 0, media: 1, baja: 2 };
-    
+
         return tareas.sort((a, b) => {
-            // Ordenar por prioridad
-            if (prioridadOrden[a.prioridad] !== prioridadOrden[b.prioridad]) {
-                return prioridadOrden[a.prioridad] - prioridadOrden[b.prioridad];
+            let comparison = 0;
+
+            if (sortType === "prioridad") {
+                // Ordenar por prioridad
+                comparison = prioridadOrden[a.prioridad] - prioridadOrden[b.prioridad];
+            } else if (sortType === "fecha") {
+                // Ordenar por fecha de vencimiento
+                const fechaA = new Date(a.fecha_vencimiento);
+                const fechaB = new Date(b.fecha_vencimiento);
+                comparison = fechaA - fechaB;
             }
-            // Si tienen la misma prioridad, ordenar por fecha de vencimiento
-            const fechaA = new Date(a.fecha_vencimiento);
-            const fechaB = new Date(b.fecha_vencimiento);
-            return fechaA - fechaB;
+
+            // Invertir el orden si la dirección es descendente
+            return sortDirection === "asc" ? comparison : -comparison;
         });
     };
-    
+
     // Filtrar y ordenar las tareas por estado
     const tareasPendientes = sortTareas(tareas.filter((tarea) => tarea.estado === "pendiente"));
     const tareasEnProgreso = sortTareas(tareas.filter((tarea) => tarea.estado === "en_progreso"));
@@ -112,27 +110,45 @@ function Home() {
     return (
         <div>
             <h2>Lista de Tareas</h2>
+            <div className="sort-buttons">
+            <button
+                onClick={() => {
+                    setSortType("prioridad");
+                    toggleSortDirection();
+                }}
+            >
+                Ordenar por Prioridad {sortDirection === "asc" ? "▲" : "▼"}
+            </button>
+            <button
+                onClick={() => {
+                    setSortType("fecha");
+                    toggleSortDirection();
+                }}
+            >
+                Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
+            </button>
+        </div>
             <button className="btn-crear-tarea" onClick={() => setIsModalOpen(true)}>Crear Tarea</button>
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
             </ModalTarea>
             <div className="tareas-container">
-                <div className="tareas-column" onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, "pendiente")} >
+                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "pendiente")}>
                     <h3>Pendientes</h3>
                     {tareasPendientes.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onUpdate={updateTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
                     ))}
                 </div>
-                <div className="tareas-column"  onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, "en_progreso")} >
+                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "en_progreso")}>
                     <h3>En Progreso</h3>
                     {tareasEnProgreso.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onUpdate={updateTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
                     ))}
                 </div>
-                <div className="tareas-column"  onDragOver={handleDragOver} onDrop={(e) => handleDrop(e, "completada")} >
+                <div className="tareas-column" onDragOver={(e) => e.preventDefault()} onDrop={(e) => handleDrop(e, "completada")}>
                     <h3>Completadas</h3>
                     {tareasCompletadas.map((tarea) => (
-                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onUpdate={updateTarea} onDragStart={handleDragStart} />
+                        <Tarea tarea={tarea} key={tarea.id} onDelete={deleteTarea} onDragStart={handleDragStart} />
                     ))}
                 </div>
             </div>

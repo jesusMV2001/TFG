@@ -48,3 +48,29 @@
     background-color: #003f7f; /* Azul aún más oscuro */
     transform: translateY(0); /* Eliminar elevación al hacer clic */
 }
+
+.sort-buttons {
+    margin-bottom: 20px;
+    display: flex;
+    gap: 10px;
+}
+
+.sort-buttons button {
+    padding: 8px 15px;
+    background-color: #6c757d; /* Gris */
+    color: white;
+    border: none;
+    border-radius: 4px;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.sort-buttons button:hover {
+    background-color: #5a6268; /* Gris más oscuro */
+}
+
+.sort-buttons button:focus {
+    outline: none;
+    box-shadow: 0 0 4px rgba(108, 117, 125, 0.8);
+}
