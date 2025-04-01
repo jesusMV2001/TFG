@@ -79,68 +79,103 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
             </ModalTarea>
 
             <ModalTarea isOpen={isModalVerOpen} onClose={() => setIsModalVerOpen(false)}>
-                <div className="space-y-6">
-                    <h2 className="text-2xl font-bold text-gray-800">Detalles de la Tarea</h2>
-                    
-                    <div className="bg-gray-50 rounded-lg p-4 space-y-2">
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Título:</span>
-                            <span>{tarea.titulo}</span>
-                        </p>
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Estado:</span>
-                            <span>{tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}</span>
-                        </p>
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Prioridad:</span>
-                            <span className={prioridadColor[tarea.prioridad]}>
-                                {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}
-                            </span>
-                        </p>
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Fecha Creación:</span>
-                            <span>{new Date(tarea.fecha_creacion).toLocaleDateString()}</span>
-                        </p>
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Vencimiento:</span>
-                            <span>{new Date(tarea.fecha_vencimiento).toLocaleDateString()}</span>
-                        </p>
-                    </div>
-                    
-                    <div className="bg-gray-50 rounded-lg p-4">
-                        <p className="flex gap-2">
-                            <span className="font-semibold text-gray-700 min-w-[120px]">Descripción:</span>
-                            <span>{tarea.descripcion || "Sin descripción"}</span>
-                        </p>
-                    </div>
-
-                    <div className="space-y-4">
-                        <h3 className="text-xl font-semibold text-gray-800">Historial de Cambios</h3>
-                        {historial.length > 0 ? (
-                            <ul className="space-y-3">
-                                {historial.map((cambio) => (
-                                    <li key={cambio.id} className="bg-white border border-gray-200 rounded-lg p-4 space-y-2">
-                                        <p className="flex gap-2">
-                                            <span className="font-semibold text-gray-700 min-w-[80px]">Acción:</span>
-                                            <span>{cambio.accion}</span>
-                                        </p>
-                                        <p className="flex gap-2">
-                                            <span className="font-semibold text-gray-700 min-w-[80px]">Fecha:</span>
-                                            <span>{new Date(cambio.fecha_cambio).toLocaleDateString()}</span>
-                                        </p>
-                                        <p className="flex gap-2">
-                                            <span className="font-semibold text-gray-700 min-w-[80px]">Usuario:</span>
-                                            <span>{cambio.usuario || "Desconocido"}</span>
-                                        </p>
-                                    </li>
-                                ))}
-                            </ul>
-                        ) : (
-                            <p className="text-gray-500 italic">No hay historial de cambios.</p>
-                        )}
-                    </div>
+    <div className="space-y-8">
+        {/* Header */}
+        <div className="border-b border-gray-200 pb-4">
+            <h2 className="text-2xl font-bold text-gray-800">
+                {tarea.titulo}
+            </h2>
+            <p className="text-sm text-gray-500 mt-1">
+                Creada el {new Date(tarea.fecha_creacion).toLocaleDateString()}
+            </p>
+        </div>
+        
+        {/* Main Info */}
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Left Column - Status Info */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium text-gray-600">Estado</span>
                 </div>
-            </ModalTarea>
+                <p className="text-lg font-semibold">
+                    {tarea.estado.charAt(0).toUpperCase() + tarea.estado.slice(1)}
+                </p>
+                
+                <div className="flex items-center gap-2 mt-6">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium text-gray-600">Prioridad</span>
+                </div>
+                <p className={`text-lg font-semibold ${prioridadColor[tarea.prioridad]}`}>
+                    {tarea.prioridad.charAt(0).toUpperCase() + tarea.prioridad.slice(1)}
+                </p>
+            </div>
+
+            {/* Right Column - Dates Info */}
+            <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
+                <div className="flex items-center gap-2">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium text-gray-600">Fecha de Vencimiento</span>
+                </div>
+                <p className="text-lg font-semibold">
+                    {new Date(tarea.fecha_vencimiento).toLocaleDateString()}
+                </p>
+
+                <div className="flex items-center gap-2 mt-6">
+                    <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                    <span className="text-sm font-medium text-gray-600">Tiempo Restante</span>
+                </div>
+                <p className="text-lg font-semibold">
+                    {Math.ceil((new Date(tarea.fecha_vencimiento) - new Date()) / (1000 * 60 * 60 * 24))} días
+                </p>
+            </div>
+        </div>
+
+        {/* Description */}
+        <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
+            <div className="flex items-center gap-2 mb-4">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <span className="text-sm font-medium text-gray-600">Descripción</span>
+            </div>
+            <p className="text-gray-700 leading-relaxed">
+                {tarea.descripcion || "Sin descripción"}
+            </p>
+        </div>
+
+        {/* History Section */}
+        <div className="space-y-4">
+            <div className="flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-blue-500"></div>
+                <h3 className="text-lg font-semibold text-gray-800">Historial de Cambios</h3>
+            </div>
+            {historial.length > 0 ? (
+                <div className="bg-white rounded-xl border border-gray-200 shadow-sm overflow-hidden">
+                    <ul className="divide-y divide-gray-200">
+                        {historial.map((cambio) => (
+                            <li key={cambio.id} className="p-4 hover:bg-gray-50 transition-colors">
+                                <div className="flex items-center justify-between">
+                                    <div>
+                                        <p className="font-medium text-gray-800">{cambio.accion}</p>
+                                        <p className="text-sm text-gray-500">
+                                            Por: {cambio.usuario || "Desconocido"}
+                                        </p>
+                                    </div>
+                                    <span className="text-sm text-gray-500">
+                                        {new Date(cambio.fecha_cambio).toLocaleDateString()}
+                                    </span>
+                                </div>
+                            </li>
+                        ))}
+                    </ul>
+                </div>
+            ) : (
+                <p className="text-gray-500 italic bg-gray-50 p-4 rounded-lg">
+                    No hay historial de cambios.
+                </p>
+            )}
+        </div>
+    </div>
+</ModalTarea>
         </div>
     );
 }
