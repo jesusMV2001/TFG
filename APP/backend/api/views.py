@@ -201,3 +201,26 @@ class ComentarioListCreate(generics.ListCreateAPIView):
 
     def perform_create(self, serializer):
         serializer.save(usuario=self.request.user)
+        
+class ComentarioDelete(generics.DestroyAPIView):
+    serializer_class = ComentarioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Comentario.objects.filter(usuario=self.request.user)
+
+    def destroy(self, request, *args, **kwargs):
+        try:
+            comentario = self.get_object()
+            if comentario.usuario != request.user:
+                return Response(
+                    {'detail': 'No tienes permiso para eliminar este comentario'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            comentario.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
