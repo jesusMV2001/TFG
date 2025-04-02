@@ -22,40 +22,32 @@ function ComentariosList({ tareaId, onClose }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        if (!nuevoComentario.trim()) return;
+        setError(''); // Limpiar errores previos
+        if (!nuevoComentario.trim()) {
+            setError('El comentario no puede estar vacío');
+            return;
+        }
 
         try {
             const payload = {
                 texto: nuevoComentario,
-                tarea: tareaId 
+                tarea: tareaId
             };
-            
-            console.log('Enviando comentario:', payload); // Para debugging
+
 
             const response = await api.post(`/api/tareas/${tareaId}/comentarios/`, payload);
-            console.log('Respuesta:', response.data); // Para debugging
-            
             setNuevoComentario('');
             fetchComentarios();
         } catch (error) {
             console.error('Error completo:', error);
             console.error('Respuesta del servidor:', error.response?.data);
-            
+
             setError(error.response?.data?.detail || 'Error al crear el comentario');
         }
     };
 
     return (
         <div className="p-4 space-y-4">
-            <div className="flex justify-between items-center">
-                <h3 className="text-xl font-semibold text-gray-800">Comentarios</h3>
-                <button
-                    onClick={onClose}
-                    className="text-gray-500 hover:text-gray-700"
-                >
-                    ×
-                </button>
-            </div>
 
             {error && (
                 <p className="text-red-500 text-sm">{error}</p>
