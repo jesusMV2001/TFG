@@ -1,6 +1,6 @@
 from django.contrib.auth.models import User
 from rest_framework import serializers
-from .models import Tarea, Etiqueta, HistorialCambios
+from .models import Comentario, Tarea, Etiqueta, HistorialCambios
 from datetime import date
 
 class UserSerializer(serializers.ModelSerializer):
@@ -58,3 +58,11 @@ class HistorialCambiosSerializer(serializers.ModelSerializer):
             'fecha_cambio',
             'usuario'
         ]
+
+class ComentarioSerializer(serializers.ModelSerializer):
+    usuario = serializers.ReadOnlyField(source='usuario.username')
+    
+    class Meta:
+        model = Comentario
+        fields = ['id', 'texto', 'fecha_creacion', 'usuario', 'tarea']
+        read_only_fields = ['fecha_creacion', 'usuario']

@@ -42,3 +42,15 @@ class HistorialCambios(models.Model):
 
     def __str__(self):
         return f"{self.accion} - {self.fecha_cambio}"
+
+class Comentario(models.Model):
+    tarea = models.ForeignKey(Tarea, on_delete=models.CASCADE, related_name='comentarios')
+    usuario = models.ForeignKey(User, on_delete=models.CASCADE)
+    texto = models.TextField()
+    fecha_creacion = models.DateTimeField(auto_now_add=True)
+
+    def __str__(self):
+        return f"Comentario de {self.usuario.username} en {self.tarea.titulo}"
+
+    class Meta:
+        ordering = ['-fecha_creacion']

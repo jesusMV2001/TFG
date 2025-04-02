@@ -1,9 +1,9 @@
 from django.shortcuts import render
 from django.contrib.auth.models import User
 from rest_framework import generics, serializers
-from .serializers import UserSerializer, TareaSerializer, HistorialCambiosSerializer, EtiquetaSerializer
+from .serializers import ComentarioSerializer, UserSerializer, TareaSerializer, HistorialCambiosSerializer, EtiquetaSerializer
 from rest_framework.permissions import AllowAny, IsAuthenticated
-from .models import Tarea, HistorialCambios, Etiqueta
+from .models import Comentario, Tarea, HistorialCambios, Etiqueta
 from django.db import models
 from rest_framework.response import Response
 from rest_framework import status
@@ -167,3 +167,37 @@ class EtiquetaDelete(generics.DestroyAPIView):
             return Response({"message": "Etiqueta eliminada correctamente."}, status=status.HTTP_204_NO_CONTENT)
         except Etiqueta.DoesNotExist:
             return Response({"error": "Etiqueta no encontrada."}, status=status.HTTP_404_NOT_FOUND)
+        
+class ComentarioListCreate(generics.ListCreateAPIView):
+    serializer_class = ComentarioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        tarea_id = self.kwargs['tarea_id']
+        return Comentario.objects.filter(tarea_id=tarea_id)
+
+    def create(self, request, *args, **kwargs):
+        try:
+            tarea_id = self.kwargs['tarea_id']
+            # Asegurarse de que la tarea existe
+            tarea = Tarea.objects.get(id=tarea_id)
+            
+            # Crear el comentario
+            serializer = self.get_serializer(data={'texto': request.data['texto'], 'tarea': tarea_id})
+            serializer.is_valid(raise_exception=True)
+            self.perform_create(serializer)
+            
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+        except Tarea.DoesNotExist:
+            return Response(
+                {'detail': 'Tarea no encontrada'},
+                status=status.HTTP_404_NOT_FOUND
+            )
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+    def perform_create(self, serializer):
+        serializer.save(usuario=self.request.user)

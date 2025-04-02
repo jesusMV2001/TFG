@@ -8,4 +8,5 @@ urlpatterns = [
     path('tareas/<int:tarea_id>/historial/', views.HistorialCambiosList.as_view(), name='historial-cambios'),
     path('etiquetas/', views.EtiquetaListCreate.as_view(), name='etiqueta-list-create'),
     path('etiquetas/delete/<int:pk>/', views.EtiquetaDelete.as_view(), name='etiqueta-delete'),
+    path('tareas/<int:tarea_id>/comentarios/', views.ComentarioListCreate.as_view(), name='comentario-list-create'),
 ]
