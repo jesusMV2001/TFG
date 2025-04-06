@@ -13,7 +13,8 @@ function Home() {
     const [tareas, setTareas] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
     const [sortType, setSortType] = useState("prioridad"); // Estado para el tipo de ordenamiento
-    const [sortDirection, setSortDirection] = useState("asc"); // Estado para la dirección del orden
+    const [priorityDirection, setPriorityDirection] = useState("asc");
+    const [dateDirection, setDateDirection] = useState("asc");
     const [searchText, setSearchText] = useState(""); // Estado para el texto de búsqueda
 
     useEffect(() => {
@@ -159,22 +160,18 @@ function Home() {
      */
     const sortTareas = (tareas) => {
         const prioridadOrden = { alta: 0, media: 1, baja: 2 };
+        const direction = sortType === "prioridad" ? priorityDirection : dateDirection;
 
         return tareas.sort((a, b) => {
             let comparison = 0;
 
             if (sortType === "prioridad") {
-                // Ordenar por prioridad
                 comparison = prioridadOrden[a.prioridad] - prioridadOrden[b.prioridad];
             } else if (sortType === "fecha") {
-                // Ordenar por fecha de vencimiento
-                const fechaA = new Date(a.fecha_vencimiento);
-                const fechaB = new Date(b.fecha_vencimiento);
-                comparison = fechaA - fechaB;
+                comparison = new Date(a.fecha_vencimiento) - new Date(b.fecha_vencimiento);
             }
 
-            // Invertir el orden si la dirección es descendente
-            return sortDirection === "asc" ? comparison : -comparison;
+            return direction === "asc" ? comparison : -comparison;
         });
     };
 
@@ -207,20 +204,20 @@ function Home() {
                 <button
                     onClick={() => {
                         setSortType("prioridad");
-                        toggleSortDirection();
+                        setPriorityDirection(prev => prev === "asc" ? "desc" : "asc");
                     }}
                     className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
-                    Ordenar por Prioridad {sortDirection === "asc" ? "▲" : "▼"}
+                    Ordenar por Prioridad {priorityDirection === "asc" ? "▲" : "▼"}
                 </button>
                 <button
                     onClick={() => {
                         setSortType("fecha");
-                        toggleSortDirection();
+                        setDateDirection(prev => prev === "asc" ? "desc" : "asc");
                     }}
                     className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors"
                 >
-                    Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
+                    Ordenar por Fecha {dateDirection === "asc" ? "▲" : "▼"}
                 </button>
             </div>
 
