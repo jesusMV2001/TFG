@@ -3,6 +3,7 @@ import api from "../api";
 import TareaForm from "../components/TareaForm";
 import Tarea from "../components/Tarea";
 import ModalTarea from "../components/ModalTarea";
+import Toast from '../components/Toast';
 
 /**
  * Componente principal que muestra y gestiona la lista de tareas
@@ -11,11 +12,12 @@ import ModalTarea from "../components/ModalTarea";
  */
 function Home() {
     const [tareas, setTareas] = useState([]);
-    const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
-    const [sortType, setSortType] = useState("prioridad"); // Estado para el tipo de ordenamiento
+    const [isModalOpen, setIsModalOpen] = useState(false);
+    const [sortType, setSortType] = useState("prioridad"); 
     const [priorityDirection, setPriorityDirection] = useState("asc");
     const [dateDirection, setDateDirection] = useState("asc");
-    const [searchText, setSearchText] = useState(""); // Estado para el texto de búsqueda
+    const [searchText, setSearchText] = useState(""); 
+    const [toast, setToast] = useState({ message: '', type: 'success' });
 
     useEffect(() => {
         getTareas();
@@ -30,7 +32,7 @@ function Home() {
         api.get("/api/tareas/").then((response) => {
             setTareas(response.data);
         }).catch((error) => {
-            alert("Error al obtener las tareas");
+            showToast("Error al obtener las tareas", "error");
             console.log(error);
         });
     };
@@ -43,12 +45,26 @@ function Home() {
      */
     const deleteTarea = async (id) => {
         api.delete(`/api/tareas/delete/${id}/`).then((response) => {
-            if (response.status === 204) alert("Tarea eliminada");
+            if (response.status === 204) showToast("Tarea eliminada exitosamente");
             getTareas();
         }).catch((error) => {
-            alert("Error al eliminar la tarea");
+            showToast("Error al eliminar la tarea", "error");
             console.log(error);
         });
+    };
+
+    /**
+     * Muestra un mensaje toast
+     * 
+     * @param {string} message - Mensaje a mostrar
+     * @param {string} type - Tipo de mensaje (success, error)
+     */
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        // Cerrar automáticamente después de 3 segundos
+        setTimeout(() => {
+            setToast({ message: '', type: 'success' });
+        }, 3000);
     };
 
     /**
@@ -58,14 +74,17 @@ function Home() {
      * @returns {Promise<void>}
      */
     const addTarea = async (payload) => {
-        api.post("/api/tareas/", payload).then((response) => {
-            if (response.status === 201) alert("Tarea agregada");
-            getTareas();
-            setIsModalOpen(false); // Cerrar el modal después de agregar la tarea
-        }).catch((error) => {
-            alert("Error al agregar la tarea");
-            console.log(error);
-        });
+        try {
+            const response = await api.post("/api/tareas/", payload);
+            if (response.status === 201) {
+                showToast("Tarea creada exitosamente");
+                getTareas();
+                setIsModalOpen(false);
+            }
+        } catch (error) {
+            showToast("Error al crear la tarea", "error");
+            console.error(error);
+        }
     };
 
     /**
@@ -78,7 +97,7 @@ function Home() {
     const updateTarea = async (id, updatedTarea) => {
         api.put(`/api/tareas/update/${id}/`, updatedTarea).then((response) => {
             if (response.status === 200) {
-                alert("Tarea actualizada");
+                showToast("Tarea actualizada exitosamente");
                 setTareas((prevTareas) =>
                     prevTareas.map((t) =>
                         t.id === id ? { ...t, ...updatedTarea } : t
@@ -86,7 +105,7 @@ function Home() {
                 );
             }
         }).catch((error) => {
-            alert("Error al actualizar la tarea");
+            showToast("Error al actualizar la tarea", "error");
             console.log(error);
         });
     };
@@ -112,7 +131,7 @@ function Home() {
                 );
             }
         }).catch((error) => {
-            alert("Error al actualizar el estado de la tarea");
+            showToast("Error al actualizar el estado de la tarea", "error");
             console.log(error);
         });
     };
@@ -296,6 +315,11 @@ function Home() {
                     </div>
                 </div>
             </div>
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ message: '', type: 'success' })}
+            />
         </div>
     );
 }

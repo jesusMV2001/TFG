@@ -3,6 +3,7 @@ import TareaForm from "./TareaForm";
 import ModalTarea from "./ModalTarea";
 import api from "../api";
 import ComentariosList from "./ComentariosList";
+import Toast from "./Toast";
 
 /**
  * Componente para mostrar y gestionar una tarea individual
@@ -19,6 +20,20 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
     const [isModalVerOpen, setIsModalVerOpen] = useState(false);
     const [historial, setHistorial] = useState([]);
     const [isComentariosOpen, setIsComentariosOpen] = useState(false);
+    const [toast, setToast] = useState({ message: '', type: 'success' });
+
+    /**
+     * Muestra un mensaje toast
+     * 
+     * @param {string} message - Mensaje a mostrar
+     * @param {string} type - Tipo de mensaje (success, error)
+     */
+    const showToast = (message, type = 'success') => {
+        setToast({ message, type });
+        setTimeout(() => {
+            setToast({ message: '', type: 'success' });
+        }, 3000);
+    };
 
     /**
      * Obtiene el historial de cambios de la tarea desde la API
@@ -29,7 +44,7 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
         api.get(`/api/tareas/${tarea.id}/historial/`).then((response) => {
             setHistorial(response.data);
         }).catch((error) => {
-            alert("Error al obtener el historial de cambios");
+            showToast("Error al obtener el historial de cambios", "error");
             console.log(error);
         });
     };
@@ -42,17 +57,6 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
     const handleViewDetails = () => {
         fetchHistorial();
         setIsModalVerOpen(true);
-    };
-
-    /**
-     * Maneja la actualización de la tarea
-     * 
-     * @param {Object} updatedTarea - Objeto con los datos actualizados de la tarea
-     * @returns {void}
-     */
-    const handleUpdate = (updatedTarea) => {
-        onUpdate(tarea.id, updatedTarea);
-        setIsModalModificarOpen(false);
     };
 
     // Mapeo de colores para las prioridades
@@ -124,7 +128,13 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
 
             {/* Modal para modificar Tarea */}
             <ModalTarea isOpen={isModalModificarOpen} onClose={() => setIsModalModificarOpen(false)}>
-                <TareaForm onAddTarea={handleUpdate} initialData={tarea} />
+                <TareaForm 
+                    onAddTarea={(updatedTarea) => {
+                        onUpdate(tarea.id, updatedTarea);
+                        setIsModalModificarOpen(false);
+                    }} 
+                    initialData={tarea} 
+                />
             </ModalTarea>
 
             {/* Modal para ver detalles de la tarea */}
@@ -231,6 +241,12 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
             <ModalTarea isOpen={isComentariosOpen} onClose={() => setIsComentariosOpen(false)}>
                 <ComentariosList tareaId={tarea.id} onClose={() => setIsComentariosOpen(false)} />
             </ModalTarea>
+
+            <Toast
+                message={toast.message}
+                type={toast.type}
+                onClose={() => setToast({ message: '', type: 'success' })}
+            />
         </div>
     );
 }
