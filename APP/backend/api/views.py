@@ -224,3 +224,25 @@ class ComentarioDelete(generics.DestroyAPIView):
                 {'detail': str(e)},
                 status=status.HTTP_400_BAD_REQUEST
             )
+            
+class ComentarioUpdate(generics.UpdateAPIView):
+    serializer_class = ComentarioSerializer
+    permission_classes = [IsAuthenticated]
+
+    def get_queryset(self):
+        return Comentario.objects.filter(usuario=self.request.user)
+
+    def update(self, request, *args, **kwargs):
+        try:
+            comentario = self.get_object()
+            if comentario.usuario != request.user:
+                return Response(
+                    {'detail': 'No tienes permiso para editar este comentario'},
+                    status=status.HTTP_403_FORBIDDEN
+                )
+            return super().update(request, *args, **kwargs)
+        except Exception as e:
+            return Response(
+                {'detail': str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )

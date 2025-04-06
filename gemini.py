@@ -4,7 +4,6 @@ from google import genai
 api_key = os.environ["GEMINI_API_KEY"]
 client = genai.Client(api_key=api_key)
 
-# Función para leer el contenido de varios archivos
 def read_files(file_paths):
     contents = []
     for path in file_paths:
@@ -21,7 +20,6 @@ file_paths = [
     "/home/jesus/python/TFG/APP/backend/backend/urls.py",
 ]
 
-# Leer el contenido de los archivos
 files_content = read_files(file_paths)
 
 # Crear el prompt con los archivos y el mensaje
