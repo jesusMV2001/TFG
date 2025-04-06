@@ -4,12 +4,27 @@ import ModalTarea from "./ModalTarea";
 import api from "../api";
 import ComentariosList from "./ComentariosList";
 
+/**
+ * Componente para mostrar y gestionar una tarea individual
+ * 
+ * @param {Object} props - Propiedades del componente
+ * @param {Object} props.tarea - Objeto con los datos de la tarea
+ * @param {Function} props.onDelete - Función para eliminar la tarea
+ * @param {Function} props.onUpdate - Función para actualizar la tarea
+ * @param {Function} props.onDragStart - Función para manejar el inicio del arrastre
+ * @returns {JSX.Element}
+ */
 function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
     const [isModalModificarOpen, setIsModalModificarOpen] = useState(false);
     const [isModalVerOpen, setIsModalVerOpen] = useState(false);
     const [historial, setHistorial] = useState([]);
     const [isComentariosOpen, setIsComentariosOpen] = useState(false);
 
+    /**
+     * Obtiene el historial de cambios de la tarea desde la API
+     * 
+     * @returns {Promise<void>}
+     */
     const fetchHistorial = async () => {
         api.get(`/api/tareas/${tarea.id}/historial/`).then((response) => {
             setHistorial(response.data);
@@ -19,16 +34,28 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
         });
     };
 
+    /**
+     * Maneja la visualización de los detalles de la tarea
+     * 
+     * @returns {void}
+     */
     const handleViewDetails = () => {
         fetchHistorial();
         setIsModalVerOpen(true);
     };
 
+    /**
+     * Maneja la actualización de la tarea
+     * 
+     * @param {Object} updatedTarea - Objeto con los datos actualizados de la tarea
+     * @returns {void}
+     */
     const handleUpdate = (updatedTarea) => {
         onUpdate(tarea.id, updatedTarea);
         setIsModalModificarOpen(false);
     };
 
+    // Mapeo de colores para las prioridades
     const prioridadColor = {
         alta: 'text-red-600',
         media: 'text-yellow-600',
@@ -95,13 +122,15 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                 </div>
             </div>
 
+            {/* Modal para modificar Tarea */}
             <ModalTarea isOpen={isModalModificarOpen} onClose={() => setIsModalModificarOpen(false)}>
                 <TareaForm onAddTarea={handleUpdate} initialData={tarea} />
             </ModalTarea>
 
+            {/* Modal para ver detalles de la tarea */}
             <ModalTarea isOpen={isModalVerOpen} onClose={() => setIsModalVerOpen(false)}>
                 <div className="space-y-8">
-                    {/* Header */}
+                    {/* Titulo y fecha */}
                     <div className="border-b border-gray-200 pb-4">
                         <h2 className="text-2xl font-bold text-gray-800">
                             {tarea.titulo}
@@ -111,9 +140,9 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                         </p>
                     </div>
 
-                    {/* Main Info */}
+                    {/* Informacion principal */}
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        {/* Left Column - Status Info */}
+                        {/* Columna Izquierda - Prioridad y Estado */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -132,7 +161,7 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                             </p>
                         </div>
 
-                        {/* Right Column - Dates Info */}
+                        {/* Columna Derecha - Fecha de Vencimiento y Tiempo Restante */}
                         <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6 space-y-4">
                             <div className="flex items-center gap-2">
                                 <div className="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -152,7 +181,7 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                         </div>
                     </div>
 
-                    {/* Description */}
+                    {/* Descripcion */}
                     <div className="bg-white rounded-xl border border-gray-200 shadow-sm p-6">
                         <div className="flex items-center gap-2 mb-4">
                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -163,7 +192,7 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                         </p>
                     </div>
 
-                    {/* History Section */}
+                    {/* Historial de Cambios */}
                     <div className="space-y-4">
                         <div className="flex items-center gap-2">
                             <div className="w-2 h-2 rounded-full bg-blue-500"></div>
@@ -197,6 +226,8 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                     </div>
                 </div>
             </ModalTarea>
+
+            {/* Modal para ver comentarios */}
             <ModalTarea isOpen={isComentariosOpen} onClose={() => setIsComentariosOpen(false)}>
                 <ComentariosList tareaId={tarea.id} onClose={() => setIsComentariosOpen(false)} />
             </ModalTarea>

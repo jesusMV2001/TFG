@@ -3,7 +3,15 @@ import api from '../api';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
 import { useNavigate } from 'react-router-dom';
 
-function Form({ route, method }) {
+/**
+ * Componente de formulario para login y registro de usuarios
+ * 
+ * @param {Object} props - Propiedades del componente
+ * @param {string} props.route - Ruta de la API para login/registro
+ * @param {('login'|'register')} props.method - Método que determina si es login o registro
+ * @returns {JSX.Element}
+ */
+function UsuarioForm({ route, method }) {
     const [username, setUsername] = useState('');
     const [password, setPassword] = useState('');
     const [email, setEmail] = useState('');
@@ -12,6 +20,12 @@ function Form({ route, method }) {
 
     const name = method === 'login' ? 'Login' : 'Register';
 
+    /**
+     * Maneja el envío del formulario de login/registro
+     * 
+     * @param {Event} e - Evento del formulario
+     * @returns {Promise<void>}
+     */
     const handleSubmit = async (e) => {
         e.preventDefault();
         setError('');
@@ -58,7 +72,7 @@ function Form({ route, method }) {
                                 {error}
                             </div>
                         )}
-                        
+
                         <div>
                             <input
                                 type="text"
@@ -109,4 +123,4 @@ function Form({ route, method }) {
     );
 }
 
-export default Form;
+export default UsuarioForm;

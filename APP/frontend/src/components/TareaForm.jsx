@@ -1,7 +1,21 @@
 import { useState, useEffect } from "react";
 import api from "../api";
 
+/**
+ * Componente formulario para crear y editar tareas
+ * 
+ * @param {Object} props - Propiedades del componente
+ * @param {Function} props.onAddTarea - Función para manejar la creación/actualización de la tarea
+ * @param {Object} [props.initialData={}] - Datos iniciales de la tarea para edición
+ * @returns {JSX.Element}
+ */
 function TareaForm({ onAddTarea, initialData = {} }) {
+    /**
+     * Formatea una fecha al formato YYYY-MM-DD requerido por el input type="date"
+     * 
+     * @param {string|Date} date - Fecha a formatear
+     * @returns {string} Fecha formateada
+     */
     const formatDate = (date) => {
         if (!date) return "";
         const d = new Date(date);
@@ -16,7 +30,6 @@ function TareaForm({ onAddTarea, initialData = {} }) {
     const [estado, setEstado] = useState(initialData.estado || "pendiente");
     const [prioridad, setPrioridad] = useState(initialData.prioridad || "media");
     const [fechaVencimiento, setFechaVencimiento] = useState(formatDate(initialData.fecha_vencimiento));
-    const [etiquetas, setEtiquetas] = useState(initialData.etiquetas || []);
     const [todasEtiquetas, setTodasEtiquetas] = useState([]);
     const [nuevaEtiqueta, setNuevaEtiqueta] = useState("");
     const [error, setError] = useState("");
@@ -34,6 +47,12 @@ function TareaForm({ onAddTarea, initialData = {} }) {
         }
     }, [initialData.id]);
 
+    /**
+     * Maneja el envío del formulario
+     * 
+     * @param {Event} e - Evento del formulario
+     * @returns {void}
+     */
     const handleSubmit = (e) => {
         e.preventDefault();
         setError("");
@@ -58,18 +77,17 @@ function TareaForm({ onAddTarea, initialData = {} }) {
         onAddTarea(payload);
     };
 
-    const handleEtiquetaChange = (e) => {
-        const selectedOptions = Array.from(e.target.selectedOptions);
-        const selectedIds = selectedOptions.map((option) => option.value);
-        setEtiquetas(selectedIds);
-    };
-
+    /**
+     * Maneja la creación de una nueva etiqueta
+     * 
+     * @returns {Promise<void>}
+     */
     const handleCrearEtiqueta = () => {
         if (!nuevaEtiqueta.trim()) {
             setError("El nombre de la etiqueta no puede estar vacío.");
             return;
         }
-    
+
         api.post("/api/etiquetas/", { nombre: nuevaEtiqueta, tarea_id: initialData.id })
             .then((response) => {
                 setTodasEtiquetas((prev) => [...prev, response.data]);
@@ -81,6 +99,12 @@ function TareaForm({ onAddTarea, initialData = {} }) {
             });
     };
 
+    /**
+     * Maneja la eliminación de una etiqueta
+     * 
+     * @param {number} etiquetaId - ID de la etiqueta a eliminar
+     * @returns {Promise<void>}
+     */
     const handleEliminarEtiqueta = (etiquetaId) => {
         api.delete(`/api/etiquetas/delete/${etiquetaId}/`)
             .then(() => {
@@ -93,13 +117,15 @@ function TareaForm({ onAddTarea, initialData = {} }) {
     };
 
     return (
+        // Formulario para crear o editar una tarea
         <form onSubmit={handleSubmit} className="flex flex-col gap-4 max-w-2xl mx-auto p-6 bg-white rounded-xl shadow-lg">
             {error && (
                 <p className="text-red-500 text-sm bg-red-50 p-3 rounded-lg border border-red-200">
                     {error}
                 </p>
             )}
-            
+
+            {/* Tiutlo */}
             <div className="space-y-1">
                 <label htmlFor="titulo" className="block text-sm font-medium text-gray-700">
                     Título
@@ -116,6 +142,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 />
             </div>
 
+            {/* Descripción */}
             <div className="space-y-1">
                 <label htmlFor="descripcion" className="block text-sm font-medium text-gray-700">
                     Descripción
@@ -130,6 +157,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 />
             </div>
 
+            {/* Estado*/}
             <div className="space-y-1">
                 <label htmlFor="estado" className="block text-sm font-medium text-gray-700">
                     Estado
@@ -147,6 +175,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 </select>
             </div>
 
+            {/* Prioridad */}
             <div className="space-y-1">
                 <label htmlFor="prioridad" className="block text-sm font-medium text-gray-700">
                     Prioridad
@@ -164,6 +193,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 </select>
             </div>
 
+            {/* Fecha de Vencimiento */}
             <div className="space-y-1">
                 <label htmlFor="fechaVencimiento" className="block text-sm font-medium text-gray-700">
                     Fecha de Vencimiento
@@ -179,6 +209,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 />
             </div>
 
+            {/* Etiquetas */}
             {initialData.id && (
                 <div className="space-y-4">
                     <label className="block text-sm font-medium text-gray-700">

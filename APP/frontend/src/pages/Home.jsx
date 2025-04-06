@@ -4,6 +4,11 @@ import TareaForm from "../components/TareaForm";
 import Tarea from "../components/Tarea";
 import ModalTarea from "../components/ModalTarea";
 
+/**
+ * Componente principal que muestra y gestiona la lista de tareas
+ * 
+ * @returns {JSX.Element}
+ */
 function Home() {
     const [tareas, setTareas] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false); // Estado para controlar el modal
@@ -15,6 +20,11 @@ function Home() {
         getTareas();
     }, []);
 
+    /**
+     * Obtiene todas las tareas del usuario desde la API
+     * 
+     * @returns {Promise<void>}
+     */
     const getTareas = async () => {
         api.get("/api/tareas/").then((response) => {
             setTareas(response.data);
@@ -24,6 +34,12 @@ function Home() {
         });
     };
 
+    /**
+     * Elimina una tarea específica
+     * 
+     * @param {number} id - ID de la tarea a eliminar
+     * @returns {Promise<void>}
+     */
     const deleteTarea = async (id) => {
         api.delete(`/api/tareas/delete/${id}/`).then((response) => {
             if (response.status === 204) alert("Tarea eliminada");
@@ -34,6 +50,12 @@ function Home() {
         });
     };
 
+    /**
+     * Añade una nueva tarea
+     * 
+     * @param {Object} payload - Datos de la nueva tarea
+     * @returns {Promise<void>}
+     */
     const addTarea = async (payload) => {
         api.post("/api/tareas/", payload).then((response) => {
             if (response.status === 201) alert("Tarea agregada");
@@ -45,6 +67,13 @@ function Home() {
         });
     };
 
+    /**
+     * Actualiza una tarea existente
+     * 
+     * @param {number} id - ID de la tarea a actualizar
+     * @param {Object} updatedTarea - Datos actualizados de la tarea
+     * @returns {Promise<void>}
+     */
     const updateTarea = async (id, updatedTarea) => {
         api.put(`/api/tareas/update/${id}/`, updatedTarea).then((response) => {
             if (response.status === 200) {
@@ -61,6 +90,13 @@ function Home() {
         });
     };
 
+    /**
+     * Actualiza el estado de una tarea
+     * 
+     * @param {number} id - ID de la tarea
+     * @param {string} nuevoEstado - Nuevo estado de la tarea
+     * @returns {Promise<void>}
+     */
     const updateTareaEstado = async (id, nuevoEstado) => {
         const tarea = tareas.find((t) => t.id === id);
         if (!tarea) return;
@@ -80,23 +116,47 @@ function Home() {
         });
     };
 
+    /**
+     * Maneja el inicio del arrastre de una tarea
+     * 
+     * @param {DragEvent} e - Evento de arrastre
+     * @param {number} id - ID de la tarea
+     */
     const handleDragStart = (e, id) => {
         e.dataTransfer.setData("tareaId", id);
     };
 
+    /**
+     * Maneja la suelta de una tarea en una columna
+     * 
+     * @param {DragEvent} e - Evento de soltar
+     * @param {string} nuevoEstado - Nuevo estado de la tarea
+     */
     const handleDrop = (e, nuevoEstado) => {
         const id = e.dataTransfer.getData("tareaId");
         updateTareaEstado(parseInt(id), nuevoEstado);
     };
 
+    /**
+     * Permite el evento de soltar
+     * 
+     * @param {DragEvent} e - Evento de arrastre sobre
+     */
     const handleDragOver = (e) => {
         e.preventDefault(); // Permitir el drop
     };
 
+    // Cambia la dirección del ordenamiento
     const toggleSortDirection = () => {
         setSortDirection((prevDirection) => (prevDirection === "asc" ? "desc" : "asc"));
     };
 
+    /**
+     * Ordena las tareas por prioridad o fecha
+     * 
+     * @param {Array<Object>} tareas - Array de tareas a ordenar
+     * @returns {Array<Object>} Tareas ordenadas
+     */
     const sortTareas = (tareas) => {
         const prioridadOrden = { alta: 0, media: 1, baja: 2 };
 
@@ -132,8 +192,8 @@ function Home() {
     return (
         <div className="container mx-auto px-4 py-8">
             <h2 className="text-2xl font-bold text-gray-800 mb-6">Lista de Tareas</h2>
-            
-            {/* Search input */}
+
+            {/* Buscador */}
             <input
                 type="text"
                 placeholder="Buscar tareas..."
@@ -141,8 +201,8 @@ function Home() {
                 onChange={(e) => setSearchText(e.target.value)}
                 className="w-full max-w-md px-4 py-2 mb-6 border border-gray-300 rounded-lg shadow-sm focus:ring-2 focus:ring-blue-500 focus:border-transparent focus:outline-none"
             />
-            
-            {/* Sort buttons */}
+
+            {/* Botones de ordenar */}
             <div className="flex gap-4 mb-6">
                 <button
                     onClick={() => {
@@ -163,77 +223,77 @@ function Home() {
                     Ordenar por Fecha {sortDirection === "asc" ? "▲" : "▼"}
                 </button>
             </div>
-            
-            {/* Create task button */}
-            <button 
+
+            {/* Boton de Crear Tarea */}
+            <button
                 onClick={() => setIsModalOpen(true)}
                 className="px-6 py-3 mb-8 bg-blue-600 text-white font-semibold rounded-lg shadow hover:bg-blue-700 transition-all transform hover:-translate-y-0.5"
             >
                 Crear Tarea
             </button>
-            
-            {/* Create task modal */}
+
+            {/* Modal para crear Tarea */}
             <ModalTarea isOpen={isModalOpen} onClose={() => setIsModalOpen(false)}>
                 <TareaForm onAddTarea={addTarea} />
             </ModalTarea>
-            
-            {/* Tasks container */}
+
+            {/* Listado de Tareas */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                {/* Pending tasks column */}
-                <div 
+                {/* Columna de Pendientes */}
+                <div
                     className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
-                    onDragOver={handleDragOver} 
+                    onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, "pendiente")}
                 >
                     <h3 className="text-lg font-semibold text-center mb-4">Pendientes</h3>
                     <div className="space-y-4">
                         {tareasPendientes.map((tarea) => (
-                            <Tarea 
-                                key={tarea.id} 
-                                tarea={tarea} 
-                                onDelete={deleteTarea} 
-                                onDragStart={handleDragStart} 
-                                onUpdate={updateTarea} 
+                            <Tarea
+                                key={tarea.id}
+                                tarea={tarea}
+                                onDelete={deleteTarea}
+                                onDragStart={handleDragStart}
+                                onUpdate={updateTarea}
                             />
                         ))}
                     </div>
                 </div>
 
-                {/* In progress tasks column */}
-                <div 
+                {/* Columna de En Progreso */}
+                <div
                     className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
-                    onDragOver={handleDragOver} 
+                    onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, "en_progreso")}
                 >
                     <h3 className="text-lg font-semibold text-center mb-4">En Progreso</h3>
                     <div className="space-y-4">
                         {tareasEnProgreso.map((tarea) => (
-                            <Tarea 
-                                key={tarea.id} 
-                                tarea={tarea} 
-                                onDelete={deleteTarea} 
-                                onDragStart={handleDragStart} 
-                                onUpdate={updateTarea} 
+                            <Tarea
+                                key={tarea.id}
+                                tarea={tarea}
+                                onDelete={deleteTarea}
+                                onDragStart={handleDragStart}
+                                onUpdate={updateTarea}
                             />
                         ))}
                     </div>
                 </div>
 
-                {/* Completed tasks column */}
-                <div 
+                {/* Columna de Completadas */}
+                <div
                     className="bg-gray-50 p-6 rounded-xl border border-gray-200 shadow-sm"
-                    onDragOver={handleDragOver} 
+                    onDragOver={handleDragOver}
                     onDrop={(e) => handleDrop(e, "completada")}
                 >
                     <h3 className="text-lg font-semibold text-center mb-4">Completadas</h3>
                     <div className="space-y-4">
                         {tareasCompletadas.map((tarea) => (
-                            <Tarea 
-                                key={tarea.id} 
-                                tarea={tarea} 
-                                onDelete={deleteTarea} 
-                                onDragStart={handleDragStart} 
-                                onUpdate={updateTarea} 
+                            <Tarea
+                                key={tarea.id}
+                                tarea={tarea}
+                                onDelete={deleteTarea}
+                                onDragStart={handleDragStart}
+                                onUpdate={updateTarea}
                             />
                         ))}
                     </div>
