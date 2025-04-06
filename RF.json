@@ -1,0 +1,70 @@
+[
+    {
+        "id_requisito": "RF-01",
+        "descripcion": "El usuario podra registrarse en la aplicacion haciendo uso de correo electronico, nombre de usuario y contrasena."
+    },
+    {
+        "id_requisito": "RF-02",
+        "descripcion": "El sistema validara que el correo electronico ingresado no este previamente registrado, en caso de error el sistema mostrara un mensaje."
+    },
+    {
+        "id_requisito": "RF-03",
+        "descripcion": "El sistema validara que la contrasena sea de minimo 8 caracteres."
+    },
+    {
+        "id_requisito": "RF-04",
+        "descripcion": "Los usuarios podran iniciar sesion y cerrar sesion."
+    },
+    {
+        "id_requisito": "RF-05",
+        "descripcion": "Los usuarios podran crear nuevas tareas proporcionando, al menos, un titulo, una fecha de vencimiento, una prioridad (alta, media o baja)."
+    },
+    {
+        "id_requisito": "RF-06",
+        "descripcion": "Se podra visualizar una lista de todas las tareas creadas por el usuario."
+    },
+    {
+        "id_requisito": "RF-07",
+        "descripcion": "Los usuarios podran editar cualquier campo visible de una tarea existente y guardar los cambios."
+    },
+    {
+        "id_requisito": "RF-08",
+        "descripcion": "Los usuarios podran eliminar tareas, eliminandolas de la lista de tareas."
+    },
+    {
+        "id_requisito": "RF-09",
+        "descripcion": "El sistema permitira que los usuarios marquen una tarea como completada, actualizando automaticamente su estado a 'completada'."
+    },
+    {
+        "id_requisito": "RF-10",
+        "descripcion": "Los usuarios podran ordenar las tareas segun su prioridad o fecha de vencimiento."
+    },
+    {
+        "id_requisito": "RF-11",
+        "descripcion": "Se implementara una funcionalidad de busqueda que permita encontrar tareas basadas en palabras clave presentes en el titulo o la descripcion."
+    },
+    {
+        "id_requisito": "RF-12",
+        "descripcion": "El sistema mantendra un registro detallado de todas las acciones realizadas sobre cada tarea (creacion, edicion y cambios de estado)."
+    },
+    {
+        "id_requisito": "RF-13",
+        "descripcion": "El historial incluira la fecha y hora de la accion y el usuario que realizo la modificacion, facilitando el seguimiento y la auditoria."
+    },
+    {
+        "id_requisito": "RF-14",
+        "descripcion": "Los usuarios podran crear y asignar nuevas etiquetas a una tarea."
+    },
+    {
+        "id_requisito": "RF-15",
+        "descripcion": "Los usuarios podran eliminar etiquetas de una tarea."
+    },
+    {
+        "id_requisito": "RF-16",
+        "descripcion": "Los usuarios podran crear y editar comentarios."
+    },
+    {
+        "id_requisito": "RF-17",
+        "descripcion": "El sistema comprobara que el comentario no este vacio, mostrando un mensaje de error si esta vacio."
+    }
+]

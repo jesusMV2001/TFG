@@ -1,4 +1,5 @@
 import os
+import json
 from google import genai
 
 api_key = os.environ["GEMINI_API_KEY"]
@@ -18,9 +19,19 @@ file_paths = [
     "/home/jesus/python/TFG/APP/backend/api/views.py",
     "/home/jesus/python/TFG/APP/backend/api/urls.py",
     "/home/jesus/python/TFG/APP/backend/backend/urls.py",
+    "/home/jesus/python/TFG/APP/frontend/src/api.js",
+    "/home/jesus/python/TFG/APP/frontend/src/pages/Login.jsx",
+    "/home/jesus/python/TFG/APP/frontend/src/App.jsx",
+    "/home/jesus/python/TFG/APP/frontend/src/pages/Register.jsx",
+    "/home/jesus/python/TFG/APP/frontend/src/components/UsuarioForm.jsx",
+    "/home/jesus/python/TFG/APP/frontend/src/components/ProtectedRoute.jsx",
 ]
 
 files_content = read_files(file_paths)
+
+with open('/home/jesus/python/TFG/HU.json', 'r') as file:
+    historias_usuario = json.load(file)
+    primera_hu = historias_usuario[0]
 
 # Crear el prompt con los archivos y el mensaje
 prompt = f"""
@@ -29,13 +40,12 @@ Dado el siguiente contenido de archivos:
 {files_content}
 
 Realiza un test que satisfaga la siguiente historia de usuario:
-Como nuevo usuario, quiero registrarme proporcionando mi nombre de usuario, correo electrónico y contraseña, para poder acceder a la aplicación de gestión de tareas.
-Criterios de aceptación:
-El usuario puede ingresar un nombre, correo y contraseña.
-Ningún campo debe estar vacío.
-La contraseña debe tener un mínimo de 8 caracteres.
-Se muestra un mensaje de error si el correo o nombre ya está registrado
-Se muestra un mensaje de error si la contraseña es menor de 8 caracteres.
+{primera_hu}
+Ten en cuenta que el test puede ser para react usando jest o para django. Tambien ten en cuenta que
+no siempre es necesario realizar un test para react o django, dependiendo de la historia de usuario puede que solo
+sea necesario para uno de los dos. En caso de que sea necesario para ambos, realiza un test para cada uno.
+no necesito que me expliques nada, solo necesito los tests.
+ten en cuenta que la ruta del test frontend es "/home/jesus/python/TFG/APP/frontend/src/components/__tests__/UsuarioForm.test.jsx"
 """
 
 response = client.models.generate_content(
