@@ -1,8 +1,6 @@
 import axios from 'axios';
 import { ACCESS_TOKEN } from './constants';
 
-const BASE_URL = process.env.VITE_API_URL || "http://127.0.0.1:8000";
-
 /**
  * Instancia de axios configurada para la API
  * Incluye la URL base y el interceptor para el token de autenticación
@@ -10,7 +8,7 @@ const BASE_URL = process.env.VITE_API_URL || "http://127.0.0.1:8000";
  * @type {import('axios').AxiosInstance}
  */
 const api = axios.create({
-    baseURL: BASE_URL,
+    baseURL: import.meta.env.VITE_API_URL,
 });
 
 /**
