@@ -30,6 +30,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
     const [estado, setEstado] = useState(initialData.estado || "pendiente");
     const [prioridad, setPrioridad] = useState(initialData.prioridad || "media");
     const [fechaVencimiento, setFechaVencimiento] = useState(formatDate(initialData.fecha_vencimiento));
+    const [etiquetas, setEtiquetas] = useState(initialData.etiquetas || []);
     const [todasEtiquetas, setTodasEtiquetas] = useState([]);
     const [nuevaEtiqueta, setNuevaEtiqueta] = useState("");
     const [error, setError] = useState("");
@@ -46,6 +47,13 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 });
         }
     }, [initialData.id]);
+
+    useEffect(() => {
+        if (initialData.etiquetas) {
+            setEtiquetas(initialData.etiquetas);
+            setTodasEtiquetas(initialData.etiquetas);
+        }
+    }, [initialData.etiquetas]);
 
     /**
      * Maneja el envío del formulario
@@ -66,13 +74,16 @@ function TareaForm({ onAddTarea, initialData = {} }) {
             return;
         }
 
+        // Extraer solo los IDs de las etiquetas
+        const etiquetasIds = todasEtiquetas.map(etiqueta => etiqueta.id);
+
         const payload = {
             titulo,
             descripcion,
             estado,
             prioridad,
             fecha_vencimiento: fechaVencimiento || null,
-            etiquetas,
+            etiquetas: etiquetasIds,
         };
         onAddTarea(payload);
     };
@@ -87,10 +98,15 @@ function TareaForm({ onAddTarea, initialData = {} }) {
             setError("El nombre de la etiqueta no puede estar vacío.");
             return;
         }
+        if (todasEtiquetas.some((etiqueta) => etiqueta.nombre === nuevaEtiqueta)) {
+            setError("La etiqueta ya existe.");
+            return;
+        }
 
         api.post("/api/etiquetas/", { nombre: nuevaEtiqueta, tarea_id: initialData.id })
             .then((response) => {
                 setTodasEtiquetas((prev) => [...prev, response.data]);
+                setEtiquetas((prev) => [...prev, response.data]);
                 setNuevaEtiqueta("");
             })
             .catch((error) => {
@@ -109,6 +125,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
         api.delete(`/api/etiquetas/delete/${etiquetaId}/`)
             .then(() => {
                 setTodasEtiquetas((prev) => prev.filter((etiqueta) => etiqueta.id !== etiquetaId));
+                setEtiquetas((prev) => prev.filter((etiqueta) => etiqueta.id !== etiquetaId));
             })
             .catch((error) => {
                 console.error("Error al eliminar etiqueta:", error);
@@ -216,18 +233,28 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                         Etiquetas
                     </label>
                     <ul className="flex flex-wrap gap-2 p-2 border border-gray-200 rounded-lg max-h-32 overflow-y-auto">
-                        {todasEtiquetas.map((etiqueta) => (
-                            <li key={etiqueta.id} className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-md text-sm">
-                                {etiqueta.nombre}
-                                <button
-                                    type="button"
-                                    onClick={() => handleEliminarEtiqueta(etiqueta.id)}
-                                    className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                        {todasEtiquetas.map((etiqueta, index) => {
+                            // Verificar que la etiqueta tenga id y nombre válidos
+                            if (!etiqueta || !etiqueta.id || !etiqueta.nombre) {
+                                return null;
+                            }
+
+                            return (
+                                <li
+                                    key={etiqueta.id}
+                                    className="flex items-center gap-2 px-3 py-1 bg-gray-100 rounded-md text-sm"
                                 >
-                                    Eliminar
-                                </button>
-                            </li>
-                        ))}
+                                    {etiqueta.nombre}
+                                    <button
+                                        type="button"
+                                        onClick={() => handleEliminarEtiqueta(etiqueta.id)}
+                                        className="text-xs px-2 py-1 bg-red-500 text-white rounded hover:bg-red-600 transition-colors"
+                                    >
+                                        Eliminar
+                                    </button>
+                                </li>
+                            );
+                        })}
                     </ul>
 
                     <div className="flex gap-3">
