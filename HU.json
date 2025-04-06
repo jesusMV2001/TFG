@@ -1,0 +1,145 @@
+[
+    {
+        "id_historia": "HU-01",
+        "titulo": "Registro de Usuarios",
+        "descripcion": "Como nuevo usuario, quiero registrarme proporcionando mi nombre de usuario, correo electrónico y contraseña, para poder acceder a la aplicación de gestión de tareas.",
+        "criterios_aceptacion": [
+            "El usuario puede ingresar un nombre, correo y contraseña.",
+            "Ningún campo debe estar vacío.",
+            "La contraseña debe tener un mínimo de 8 caracteres.",
+            "Se muestra un mensaje de error si el correo o nombre ya está registrado.",
+            "Se muestra un mensaje de error si la contraseña es menor de 8 caracteres."
+        ]
+    },
+    {
+        "id_historia": "HU-02",
+        "titulo": "Inicio de Sesión y Autenticación",
+        "descripcion": "Como usuario registrado, quiero iniciar sesión con mis credenciales, para acceder a mis tareas y datos personales.",
+        "criterios_aceptacion": [
+            "El usuario registrado debe poder iniciar sesión con sus credenciales válidas.",
+            "Si se ingresan credenciales incorrectas, se mostrará un mensaje de error.",
+            "Una vez autenticado, el sistema debe mantener la sesión activa hasta que el usuario cierre sesión."
+        ]
+    },
+    {
+        "id_historia": "HU-03",
+        "titulo": "Crear tarea",
+        "descripcion": "Como usuario, quiero poder crear nuevas tareas ingresando un título, descripción, fecha de vencimiento, prioridad y estado, para organizar mis actividades diarias.",
+        "criterios_aceptacion": [
+            "El usuario puede crear una tarea ingresando título, descripción, fecha de vencimiento, prioridad y estado inicial.",
+            "El título, fecha de vencimiento y prioridad no pueden estar vacíos.",
+            "La fecha de vencimiento no debe ser anterior a la fecha actual."
+        ]
+    },
+    {
+        "id_historia": "HU-04",
+        "titulo": "Ver tareas",
+        "descripcion": "Como usuario, quiero visualizar una lista de todas mis tareas, para tener un resumen de mi trabajo pendiente.",
+        "criterios_aceptacion": [
+            "Al acceder a la lista de tareas, se deben mostrar todas las tareas asociadas al usuario.",
+            "Cada tarea debe estar agrupada según su estado."
+        ]
+    },
+    {
+        "id_historia": "HU-05",
+        "titulo": "Editar tarea",
+        "descripcion": "Como usuario, quiero editar los detalles de una tarea existente, para actualizar la informacion cuando sea necesario.",
+        "criterios_aceptacion": [
+            "El usuario debe poder modificar cualquier campo de una tarea existente y guardar los cambios.",
+            "El sistema debe mostrar un mensaje si se ha modificado la tarea.",
+            "En caso de error, el sistema debe mostrar un mensaje de error."
+        ]
+    },
+    {
+        "id_historia": "HU-06",
+        "titulo": "Eliminar tarea",
+        "descripcion": "Como usuario, quiero eliminar tareas que ya no necesito, para mantener mi lista de tareas organizada.",
+        "criterios_aceptacion": [
+            "Al eliminar una tarea, esta debe desaparecer de la lista.",
+            "El sistema debe mostrar un mensaje si se ha borrado la tarea.",
+            "En caso de error, el sistema debe mostrar un mensaje de error."
+        ]
+    },
+    {
+        "id_historia": "HU-07",
+        "titulo": "Marcado de Tareas Completadas",
+        "descripcion": "Como usuario, quiero marcar una tarea como completada para diferenciar entre tareas pendientes, en proceso y completadas.",
+        "criterios_aceptacion": [
+            "Al marcar una tarea como completada, el estado de la tarea debe cambiar a 'completada' y reflejarse en la lista de tareas."
+        ]
+    },
+    {
+        "id_historia": "HU-08",
+        "titulo": "Ordenar Tareas",
+        "descripcion": "Como usuario, quiero ordenar mis tareas segun su prioridad o fecha de vencimiento, para encontrar rapidamente las tareas que necesito gestionar.",
+        "criterios_aceptacion": [
+            "El usuario puede ordenar por prioridad y fecha de vencimiento las tareas en la lista de tareas."
+        ]
+    },
+    {
+        "id_historia": "HU-09",
+        "titulo": "Busqueda de Tareas",
+        "descripcion": "Como usuario, quiero buscar tareas por palabras clave en el titulo o la descripcion, para acceder facilmente a informacion especifica.",
+        "criterios_aceptacion": [
+            "Al ingresar una palabra clave en la busqueda, se mostraran unicamente las tareas cuyo titulo o descripcion contiene dicha palabra."
+        ]
+    },
+    {
+        "id_historia": "HU-10",
+        "titulo": "Historial de Actividades",
+        "descripcion": "Como usuario, quiero ver un historial de cambios realizados en mis tareas, para poder rastrear el progreso y entender las modificaciones realizadas a lo largo del tiempo.",
+        "criterios_aceptacion": [
+            "Se debe mantener un registro de todas las acciones realizadas sobre cada tarea.",
+            "El usuario puede acceder a este historial para ver la secuencia de acciones y sus fechas."
+        ]
+    },
+    {
+        "id_historia": "HU-11",
+        "titulo": "Crear y asignar etiquetas",
+        "descripcion": "Como usuario, quiero crear y asignar etiquetas a mis tareas, para organizarlas mejor y facilitar su busqueda y filtrado.",
+        "criterios_aceptacion": [
+            "El usuario puede asignar y crear etiquetas para cada tarea.",
+            "El sistema debe mostrar un mensaje cuando se cree y asigne una etiqueta a una tarea."
+        ]
+    },
+    {
+        "id_historia": "HU-12",
+        "titulo": "Eliminar etiquetas",
+        "descripcion": "Como usuario, quiero eliminar etiquetas, para poder corregir un error al asignar una etiqueta en una tarea.",
+        "criterios_aceptacion": [
+            "El usuario puede eliminar etiquetas para cada tarea.",
+            "El sistema debe mostrar un mensaje cuando se elimine una etiqueta de una tarea."
+        ]
+    },
+    {
+        "id_historia": "HU-13",
+        "titulo": "Crear comentarios",
+        "descripcion": "Como usuario, quiero agregar comentarios a las tareas, para dejar observaciones, actualizaciones o feedback sobre su progreso.",
+        "criterios_aceptacion": [
+            "Cada tarea debe contar con un espacio para que los usuarios anadan comentarios.",
+            "El comentario no debe estar vacio.",
+            "El sistema debe mostrar el comentario cuando se cree.",
+            "El sistema debe mostrar un mensaje de error cuando el comentario este vacio."
+        ]
+    },
+    {
+        "id_historia": "HU-14",
+        "titulo": "Editar comentarios",
+        "descripcion": "Como usuario, quiero editar comentarios de una tarea, para corregir errores del comentario.",
+        "criterios_aceptacion": [
+            "El usuario debe poder editar un comentario de una tarea.",
+            "El comentario no debe estar vacio.",
+            "El sistema debe mostrar un mensaje cuando se edite correctamente el comentario.",
+            "El sistema debe mostrar un mensaje de error cuando el comentario este vacio."
+        ]
+    },
+    {
+        "id_historia": "HU-15",
+        "titulo": "Eliminar comentarios",
+        "descripcion": "Como usuario, quiero eliminar comentarios de una tarea, para eliminar comentarios que no sean necesarios.",
+        "criterios_aceptacion": [
+            "El usuario debe poder eliminar un comentario de una tarea.",
+            "El sistema debe mostrar un mensaje cuando se elimine correctamente el comentario."
+        ]
+    }
+]
