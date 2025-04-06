@@ -9,7 +9,7 @@ import api from "../api";
  * @param {Object} [props.initialData={}] - Datos iniciales de la tarea para edición
  * @returns {JSX.Element}
  */
-function TareaForm({ onAddTarea, initialData = {} }) {
+function TareaForm({ onAddTarea, initialData = {}, showToast }) {
     /**
      * Formatea una fecha al formato YYYY-MM-DD requerido por el input type="date"
      * 
@@ -108,6 +108,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
                 setTodasEtiquetas((prev) => [...prev, response.data]);
                 setEtiquetas((prev) => [...prev, response.data]);
                 setNuevaEtiqueta("");
+                showToast("Etiqueta creada exitosamente");
             })
             .catch((error) => {
                 console.error("Error al crear etiqueta:", error);
@@ -126,6 +127,7 @@ function TareaForm({ onAddTarea, initialData = {} }) {
             .then(() => {
                 setTodasEtiquetas((prev) => prev.filter((etiqueta) => etiqueta.id !== etiquetaId));
                 setEtiquetas((prev) => prev.filter((etiqueta) => etiqueta.id !== etiquetaId));
+                showToast("Etiqueta eliminada exitosamente");
             })
             .catch((error) => {
                 console.error("Error al eliminar etiqueta:", error);

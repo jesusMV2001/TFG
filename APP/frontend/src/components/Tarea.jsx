@@ -134,6 +134,7 @@ function Tarea({ tarea, onDelete, onUpdate, onDragStart }) {
                         setIsModalModificarOpen(false);
                     }} 
                     initialData={tarea} 
+                    showToast={showToast}
                 />
             </ModalTarea>
 
