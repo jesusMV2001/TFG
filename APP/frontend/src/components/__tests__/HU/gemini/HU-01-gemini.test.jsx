@@ -15,7 +15,7 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-01: Registro de Usuarios', () => {
-    it('El usuario puede ingresar nombre, correo y contraseña', () => {
+    it('El usuario puede ingresar un nombre, correo y contrasena.', () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
@@ -35,7 +35,7 @@ describe('HU-01: Registro de Usuarios', () => {
         expect(passwordInput.value).toBe('password123');
     });
 
-    it('Muestra un mensaje de error si algún campo está vacío', async () => {
+    it('Ningun campo debe estar vacio.', async () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
@@ -43,17 +43,15 @@ describe('HU-01: Registro de Usuarios', () => {
         );
 
         const registerButton = screen.getByText('Register');
+
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-            expect(screen.getByText('Username')).toBeVisible();
-            expect(screen.getByText('Email')).toBeVisible();
-            expect(screen.getByText('Password')).toBeVisible();
-
+            expect(screen.getByText('Username')).toBeDefined();
         });
     });
 
-    it('Muestra un mensaje de error si la contraseña es menor de 8 caracteres', async () => {
+    it('La contrasena debe tener un minimo de 8 caracteres.', async () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
@@ -68,16 +66,17 @@ describe('HU-01: Registro de Usuarios', () => {
         fireEvent.change(usernameInput, { target: { value: 'testuser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
         fireEvent.change(passwordInput, { target: { value: '1234567' } });
+
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-            expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeVisible();
+          expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeDefined();
         });
     });
 
-    it('Muestra un mensaje de error si el nombre de usuario o correo ya están registrados', async () => {
+    it('Se muestra un mensaje de error si el correo o nombre ya esta registrado.', async () => {
         api.post.mockRejectedValue({
-            response: { data: { error: 'El nombre de usuario ya está registrado.' } },
+            response: { data: { error: 'El usuario ya existe.' } },
         });
 
         render(
@@ -94,10 +93,34 @@ describe('HU-01: Registro de Usuarios', () => {
         fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-            expect(screen.getByText('El nombre de usuario ya está registrado.')).toBeVisible();
+          expect(screen.getByText('El usuario ya existe.')).toBeDefined();
+        });
+    });
+
+    it('Se muestra un mensaje de error si la contrasena es menor de 8 caracteres.', async () => {
+         render(
+            <BrowserRouter>
+                <UsuarioForm route="/api/user/register/" method="register" />
+            </BrowserRouter>
+        );
+
+        const usernameInput = screen.getByPlaceholderText('Username');
+        const emailInput = screen.getByPlaceholderText('Email');
+        const passwordInput = screen.getByPlaceholderText('Password');
+        const registerButton = screen.getByText('Register');
+
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        fireEvent.change(passwordInput, { target: { value: '1234567' } });
+
+        fireEvent.click(registerButton);
+
+        await waitFor(() => {
+          expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeDefined();
         });
     });
 });

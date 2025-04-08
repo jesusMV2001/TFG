@@ -1,4 +1,4 @@
-LLM = nvidia
+LLM = gemini
 prompt = prompt_todo.txt
 requisitos = HU
 ruta_general = /home/jesus/python/TFG/

@@ -4,6 +4,7 @@ from google import genai
 from openai import OpenAI
 from mistralai import Mistral
 from dotenv import load_dotenv
+import generate_test
 
 load_dotenv()
 
@@ -21,8 +22,7 @@ def call_llm(llm, prompt):
         response = client.models.generate_content(
             model="gemini-2.0-flash", contents=prompt
         )
-        print(response.text)
-        return
+        return response.text
     elif llm == "nvidia":
         
         client = OpenAI(
@@ -40,8 +40,7 @@ def call_llm(llm, prompt):
                 }
             ]
         )
-        print(completion.choices[0].message.content)
-        return
+        return completion.choices[0].message.content
     elif llm == "mistral":
         api_key = os.environ.get("MISTRAL_API_KEY")
         model = "mistral-large-latest"
@@ -57,8 +56,7 @@ def call_llm(llm, prompt):
                 },
             ]
         )
-        print(chat_response.choices[0].message.content)
-        return
+        return chat_response.choices[0].message.content
         
     raise ValueError(f"LLM no soportado: {llm}")
         
@@ -147,8 +145,9 @@ def make_tests(llm_list, prompt_list, tipo_requisitos_list, ruta_general, ruta_f
                     
                     # Llamar a la función para generar los tests
                     # print(f"Generando tests para {requisito['id']} usando {llm} y {prompt}")
-                    call_llm(llm, final_prompt)
-                    return
+                    respuesta = call_llm(llm, final_prompt)
+                    
+                    generate_test.extract_and_save_tests(respuesta, tipo_requisito, requisito['id'], llm, ruta_frontend_test, ruta_backend_test)
 
                 
                 
