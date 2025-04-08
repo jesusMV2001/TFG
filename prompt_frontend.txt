@@ -1,1 +1,18 @@
 Necesito que generes unos test para el frontend de un proyecto escrito en react con vite y tailwind, para realizar las pruebas de frontend se va a usar vitest.
+
+Un ejemplo de como puede empezar el codigo de un test en vitest es el siguiente:
+// /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU01_gemini.test.jsx
+import { describe, it, expect, vi } from 'vitest';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import UsuarioForm from '../../../UsuarioForm';
+import api from '../../../../api';
+import { BrowserRouter } from 'react-router-dom';
+
+vi.mock('../../../../api');
+vi.mock('react-router-dom', async () => {
+    const actual = await vi.importActual('react-router-dom');
+    return {
+        ...actual,
+        useNavigate: () => vi.fn(),
+    };
+});

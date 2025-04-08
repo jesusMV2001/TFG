@@ -19,6 +19,8 @@ if __name__ == "__main__":
     llm = config.get('LLM', [])  
     prompt = config.get('prompt', [])
     requisitos = config.get('requisitos', [])
-    ruta = config.get('ruta', [])[0]
+    ruta_general = config.get('ruta_general', [])[0]
+    ruta_frontend_test = config.get('ruta_frontend_test', [])[0]
+    ruta_backend_test = config.get('ruta_backend_test', [])[0]
     
-    llm_api.generar_tests(llm, prompt, requisitos, ruta)
+    llm_api.make_tests(llm, prompt, requisitos, ruta_general, ruta_frontend_test, ruta_backend_test)

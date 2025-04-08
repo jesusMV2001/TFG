@@ -1,4 +1,6 @@
 LLM = gemini
-prompt = prompt_todo.txt, prompt_backend.txt
-requisitos = HU.json, RF.json
-ruta = /home/jesus/python/TFG/
+prompt = prompt_todo.txt
+requisitos = HU
+ruta_general = /home/jesus/python/TFG/
+ruta_backend_test = /home/jesus/python/TFG/APP/backend/api/tests/
+ruta_frontend_test = /home/jesus/python/TFG/APP/frontend/src/components/__tests__/
