@@ -2,32 +2,32 @@
     {
         "id": "HU-01",
         "titulo": "Registro de Usuarios",
-        "descripcion": "Como nuevo usuario, quiero registrarme proporcionando mi nombre de usuario, correo electrónico y contraseña, para poder acceder a la aplicación de gestión de tareas.",
+        "descripcion": "Como nuevo usuario, quiero registrarme proporcionando mi nombre de usuario, correo electronico y contrasena, para poder acceder a la aplicacion de gestion de tareas.",
         "criterios_aceptacion": [
-            "El usuario puede ingresar un nombre, correo y contraseña.",
-            "Ningún campo debe estar vacío.",
-            "La contraseña debe tener un mínimo de 8 caracteres.",
-            "Se muestra un mensaje de error si el correo o nombre ya está registrado.",
-            "Se muestra un mensaje de error si la contraseña es menor de 8 caracteres."
+            "El usuario puede ingresar un nombre, correo y contrasena.",
+            "Ningun campo debe estar vacio.",
+            "La contrasena debe tener un minimo de 8 caracteres.",
+            "Se muestra un mensaje de error si el correo o nombre ya esta registrado.",
+            "Se muestra un mensaje de error si la contrasena es menor de 8 caracteres."
         ]
     },
     {
         "id": "HU-02",
-        "titulo": "Inicio de Sesión y Autenticación",
-        "descripcion": "Como usuario registrado, quiero iniciar sesión con mis credenciales, para acceder a mis tareas y datos personales.",
+        "titulo": "Inicio de Sesion y Autenticacion",
+        "descripcion": "Como usuario registrado, quiero iniciar sesion con mis credenciales, para acceder a mis tareas y datos personales.",
         "criterios_aceptacion": [
-            "El usuario registrado debe poder iniciar sesión con sus credenciales válidas.",
-            "Si se ingresan credenciales incorrectas, se mostrará un mensaje de error.",
-            "Una vez autenticado, el sistema debe mantener la sesión activa hasta que el usuario cierre sesión."
+            "El usuario registrado debe poder iniciar sesion con sus credenciales validas.",
+            "Si se ingresan credenciales incorrectas, se mostrara un mensaje de error.",
+            "Una vez autenticado, el sistema debe mantener la sesion activa hasta que el usuario cierre sesion."
         ]
     },
     {
         "id": "HU-03",
         "titulo": "Crear tarea",
-        "descripcion": "Como usuario, quiero poder crear nuevas tareas ingresando un título, descripción, fecha de vencimiento, prioridad y estado, para organizar mis actividades diarias.",
+        "descripcion": "Como usuario, quiero poder crear nuevas tareas ingresando un titulo, descripcion, fecha de vencimiento, prioridad y estado, para organizar mis actividades diarias.",
         "criterios_aceptacion": [
-            "El usuario puede crear una tarea ingresando título, descripción, fecha de vencimiento, prioridad y estado inicial.",
-            "El título, fecha de vencimiento y prioridad no pueden estar vacíos.",
+            "El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial.",
+            "El titulo, fecha de vencimiento y prioridad no pueden estar vacios.",
             "La fecha de vencimiento no debe ser anterior a la fecha actual."
         ]
     },
@@ -37,7 +37,7 @@
         "descripcion": "Como usuario, quiero visualizar una lista de todas mis tareas, para tener un resumen de mi trabajo pendiente.",
         "criterios_aceptacion": [
             "Al acceder a la lista de tareas, se deben mostrar todas las tareas asociadas al usuario.",
-            "Cada tarea debe estar agrupada según su estado."
+            "Cada tarea debe estar agrupada segun su estado."
         ]
     },
     {

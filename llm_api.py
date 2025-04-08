@@ -1,8 +1,11 @@
 import os
 import json
 from google import genai
-from groq import Groq
+from openai import OpenAI
 from mistralai import Mistral
+from dotenv import load_dotenv
+
+load_dotenv()
 
 def read_files(file_paths):
     contents = []
@@ -13,16 +16,48 @@ def read_files(file_paths):
 
 def call_llm(llm, prompt):
     if llm == "gemini":
-        api_key = os.environ["GEMINI_API_KEY"]
+        api_key = os.environ.get("GEMINI_API_KEY")
         client = genai.Client(api_key=api_key)
         response = client.models.generate_content(
             model="gemini-2.0-flash", contents=prompt
         )
         print(response.text)
         return
-    elif llm == "groq":
+    elif llm == "nvidia":
+        
+        client = OpenAI(
+        base_url = "https://integrate.api.nvidia.com/v1",
+        api_key = "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"
+        )
+
+
+        completion = client.chat.completions.create(
+            model="nvidia/llama-3.1-nemotron-70b-instruct",
+            messages=[
+                {
+                    "role": "user",
+                    "content": prompt,
+                }
+            ]
+        )
+        print(completion.choices[0].message.content)
         return
     elif llm == "mistral":
+        api_key = os.environ.get("MISTRAL_API_KEY")
+        model = "mistral-large-latest"
+
+        client = Mistral(api_key=api_key)
+
+        chat_response = client.chat.complete(
+            model= model,
+            messages = [
+                {
+                    "role": "user",
+                    "content": prompt,
+                },
+            ]
+        )
+        print(chat_response.choices[0].message.content)
         return
         
     raise ValueError(f"LLM no soportado: {llm}")
@@ -32,6 +67,7 @@ def get_relevant_files(prompt_type):
     Retorna la lista de archivos relevantes según el tipo de prompt
     """
     frontend_files = [
+        "/home/jesus/python/TFG/APP/frontend/src/main.jsx",
         "/home/jesus/python/TFG/APP/frontend/src/App.jsx",
         "/home/jesus/python/TFG/APP/frontend/src/api.js",
         "/home/jesus/python/TFG/APP/frontend/src/pages/Login.jsx",
@@ -111,8 +147,7 @@ def make_tests(llm_list, prompt_list, tipo_requisitos_list, ruta_general, ruta_f
                     
                     # Llamar a la función para generar los tests
                     # print(f"Generando tests para {requisito['id']} usando {llm} y {prompt}")
-                    #call_llm(llm, final_prompt)
-                    print(final_prompt)
+                    call_llm(llm, final_prompt)
                     return
 
                 
