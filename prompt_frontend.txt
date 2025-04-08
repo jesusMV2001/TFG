@@ -1,0 +1,1 @@
+Necesito que generes unos test para el frontend de un proyecto escrito en react con vite y tailwind, para realizar las pruebas de frontend se va a usar vitest.

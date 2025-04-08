@@ -1,0 +1,4 @@
+LLM = gemini
+prompt = prompt_todo.txt, prompt_backend.txt
+requisitos = HU.json, RF.json
+ruta = /home/jesus/python/TFG/
