@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import api from '../api';
 import { ACCESS_TOKEN, REFRESH_TOKEN } from '../constants';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 
 /**
  * Componente de formulario para login y registro de usuarios
@@ -109,13 +109,38 @@ function UsuarioForm({ route, method }) {
                         </div>
                     </div>
 
-                    <div>
+
+                    <div className="flex flex-col gap-4">
                         <button
                             type="submit"
                             className="group relative w-full flex justify-center py-2 px-4 border border-transparent text-sm font-medium rounded-lg text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-colors duration-200"
                         >
                             {name}
                         </button>
+
+                        <div className="text-sm text-center">
+                            {method === 'login' ? (
+                                <p className="text-gray-600">
+                                    ¿No tienes una cuenta?{' '}
+                                    <Link
+                                        to="/register"
+                                        className="font-medium text-blue-600 hover:text-blue-500"
+                                    >
+                                        Regístrate aquí
+                                    </Link>
+                                </p>
+                            ) : (
+                                <p className="text-gray-600">
+                                    ¿Ya tienes una cuenta?{' '}
+                                    <Link
+                                        to="/login"
+                                        className="font-medium text-blue-600 hover:text-blue-500"
+                                    >
+                                        Inicia sesión
+                                    </Link>
+                                </p>
+                            )}
+                        </div>
                     </div>
                 </form>
             </div>

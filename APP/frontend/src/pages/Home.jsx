@@ -4,6 +4,7 @@ import TareaForm from "../components/TareaForm";
 import Tarea from "../components/Tarea";
 import ModalTarea from "../components/ModalTarea";
 import Toast from '../components/Toast';
+import { useNavigate } from "react-router-dom";
 
 /**
  * Componente principal que muestra y gestiona la lista de tareas
@@ -11,12 +12,13 @@ import Toast from '../components/Toast';
  * @returns {JSX.Element}
  */
 function Home() {
+    const navigate = useNavigate();
     const [tareas, setTareas] = useState([]);
     const [isModalOpen, setIsModalOpen] = useState(false);
-    const [sortType, setSortType] = useState("prioridad"); 
+    const [sortType, setSortType] = useState("prioridad");
     const [priorityDirection, setPriorityDirection] = useState("asc");
     const [dateDirection, setDateDirection] = useState("asc");
-    const [searchText, setSearchText] = useState(""); 
+    const [searchText, setSearchText] = useState("");
     const [toast, setToast] = useState({ message: '', type: 'success' });
 
     useEffect(() => {
@@ -194,6 +196,14 @@ function Home() {
         });
     };
 
+    /**
+         * Maneja el logout del usuario
+         */
+    const handleLogout = () => {
+        localStorage.clear();
+        navigate('/login');
+    };
+
     // Filtrar las tareas por texto de búsqueda
     const filteredTareas = tareas.filter((tarea) =>
         tarea.titulo.toLowerCase().includes(searchText.toLowerCase()) ||
@@ -207,7 +217,16 @@ function Home() {
 
     return (
         <div className="container mx-auto px-4 py-8">
-            <h2 className="text-2xl font-bold text-gray-800 mb-6">Lista de Tareas</h2>
+            {/* Encabezado con título y botón de logout */}
+            <div className="flex justify-between items-center mb-6">
+                <h2 className="text-2xl font-bold text-gray-800">Lista de Tareas</h2>
+                <button
+                    onClick={handleLogout}
+                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors"
+                >
+                    Cerrar Sesión
+                </button>
+            </div>
 
             {/* Buscador */}
             <input
