@@ -1,3 +1,4 @@
+```javascript
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/mistral/HU-01-mistral.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
@@ -15,30 +16,34 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-01: Registro de Usuarios', () => {
-    it('Debe permitir al usuario ingresar nombre, correo y contraseña', () => {
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
+    it('El usuario puede ingresar un nombre, correo y contraseña', async () => {
+        render(<UsuarioForm route="/api/user/register/" method="register" />, { wrapper: BrowserRouter });
 
         const usernameInput = screen.getByPlaceholderText('Username');
         const emailInput = screen.getByPlaceholderText('Email');
         const passwordInput = screen.getByPlaceholderText('Password');
+        const submitButton = screen.getByText('Register');
 
-        expect(usernameInput).toBeInTheDocument();
-        expect(emailInput).toBeInTheDocument();
-        expect(passwordInput).toBeInTheDocument();
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
+
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(api.post).toHaveBeenCalledWith('/api/user/register/', {
+                username: 'testuser',
+                email: 'test@example.com',
+                password: 'password123',
+            });
+        });
     });
 
-    it('Debe mostrar un mensaje de error si algún campo está vacío', async () => {
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
+    it('Ningún campo debe estar vacío', async () => {
+        render(<UsuarioForm route="/api/user/register/" method="register" />, { wrapper: BrowserRouter });
 
         const submitButton = screen.getByText('Register');
+
         fireEvent.click(submitButton);
 
         await waitFor(() => {
@@ -46,12 +51,8 @@ describe('HU-01: Registro de Usuarios', () => {
         });
     });
 
-    it('Debe mostrar un mensaje de error si la contraseña es menor de 8 caracteres', async () => {
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
+    it('La contraseña debe tener un mínimo de 8 caracteres', async () => {
+        render(<UsuarioForm route="/api/user/register/" method="register" />, { wrapper: BrowserRouter });
 
         const usernameInput = screen.getByPlaceholderText('Username');
         const emailInput = screen.getByPlaceholderText('Email');
@@ -60,7 +61,8 @@ describe('HU-01: Registro de Usuarios', () => {
 
         fireEvent.change(usernameInput, { target: { value: 'testuser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: '1234567' } });
+        fireEvent.change(passwordInput, { target: { value: 'short' } });
+
         fireEvent.click(submitButton);
 
         await waitFor(() => {
@@ -68,55 +70,50 @@ describe('HU-01: Registro de Usuarios', () => {
         });
     });
 
-    it('Debe mostrar un mensaje de error si el correo ya está registrado', async () => {
-        api.post.mockResolvedValueOnce({
-            data: { error: 'El correo electrónico ya está registrado.' },
+    it('Se muestra un mensaje de error si el correo o nombre ya está registrado', async () => {
+        api.post.mockRejectedValueOnce({
+            response: {
+                data: {
+                    error: 'El nombre de usuario ya está registrado.',
+                },
+            },
         });
 
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
+        render(<UsuarioForm route="/api/user/register/" method="register" />, { wrapper: BrowserRouter });
 
         const usernameInput = screen.getByPlaceholderText('Username');
         const emailInput = screen.getByPlaceholderText('Email');
         const passwordInput = screen.getByPlaceholderText('Password');
         const submitButton = screen.getByText('Register');
 
-        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: '12345678' } });
-        fireEvent.click(submitButton);
+        fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
+        fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
 
-        await waitFor(() => {
-            expect(screen.getByText('El correo electrónico ya está registrado.')).toBeInTheDocument();
-        });
-    });
-
-    it('Debe mostrar un mensaje de error si el nombre de usuario ya está registrado', async () => {
-        api.post.mockResolvedValueOnce({
-            data: { error: 'El nombre de usuario ya está registrado.' },
-        });
-
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
-
-        const usernameInput = screen.getByPlaceholderText('Username');
-        const emailInput = screen.getByPlaceholderText('Email');
-        const passwordInput = screen.getByPlaceholderText('Password');
-        const submitButton = screen.getByText('Register');
-
-        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
-        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: '12345678' } });
         fireEvent.click(submitButton);
 
         await waitFor(() => {
             expect(screen.getByText('El nombre de usuario ya está registrado.')).toBeInTheDocument();
         });
     });
+
+    it('Se muestra un mensaje de error si la contraseña es menor de 8 caracteres', async () => {
+        render(<UsuarioForm route="/api/user/register/" method="register" />, { wrapper: BrowserRouter });
+
+        const usernameInput = screen.getByPlaceholderText('Username');
+        const emailInput = screen.getByPlaceholderText('Email');
+        const passwordInput = screen.getByPlaceholderText('Password');
+        const submitButton = screen.getByText('Register');
+
+        fireEvent.change(usernameInput, { target: { value: 'testuser' } });
+        fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
+        fireEvent.change(passwordInput, { target: { value: 'short' } });
+
+        fireEvent.click(submitButton);
+
+        await waitFor(() => {
+            expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument();
+        });
+    });
 });
+```

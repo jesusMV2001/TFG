@@ -1,132 +1,80 @@
-// /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-05-gemini.test.jsx
+# /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-05-gemini.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Tarea from '../../../Tarea';
 import api from '../../../../api';
-import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');
 
 describe('HU-05: Editar tarea', () => {
-    const tarea = {
-        id: 1,
-        titulo: 'Tarea de prueba',
-        descripcion: 'Descripción de prueba',
-        fecha_vencimiento: '2024-12-31T00:00:00',
-        estado: 'pendiente',
-        prioridad: 'media',
-    };
+  const tareaMock = {
+    id: 1,
+    titulo: 'Tarea de prueba',
+    descripcion: 'Descripción de prueba',
+    estado: 'pendiente',
+    prioridad: 'media',
+    fecha_vencimiento: '2024-12-31',
+    etiquetas: [],
+  };
 
-    const onDelete = vi.fn();
-    const onUpdate = vi.fn();
-    const onDragStart = vi.fn();
+  it('El usuario debe poder modificar cualquier campo de una tarea existente y guardar los cambios.', async () => {
+    api.put.mockResolvedValue({ status: 200 });
 
-    it('Debería abrir el modal de edición al hacer clic en el botón de editar', async () => {
-        render(
-            <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={onDelete}
-                    onUpdate={onUpdate}
-                    onDragStart={onDragStart}
-                />
-            </BrowserRouter>
-        );
+    render(<Tarea tarea={tareaMock} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} />);
 
-        const editarButton = screen.getByText('Editar'); // Cambiado a 'Editar'
-        fireEvent.click(editarButton);
+    fireEvent.click(screen.getByText(/Editar/i));
 
-        await waitFor(() => {
-            expect(screen.getByText('Título')).toBeVisible();
-        });
+    await waitFor(() => {
+      expect(screen.getByLabelText('Título')).toBeInTheDocument();
     });
 
-    it('Debería llamar a la función onUpdate con los datos actualizados al enviar el formulario de edición', async () => {
-        api.put.mockResolvedValue({ status: 200 });
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
 
-        render(
-            <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={onDelete}
-                    onUpdate={onUpdate}
-                    onDragStart={onDragStart}
-                />
-            </BrowserRouter>
-        );
+    fireEvent.click(screen.getByText(/Guardar Cambios/i));
 
-        const editarButton = screen.getByText('Editar'); // Cambiado a 'Editar'
-        fireEvent.click(editarButton);
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(`/api/tareas/update/1/`, expect.objectContaining({ titulo: 'Tarea editada' }));
+    });
+  });
 
-        await waitFor(() => {
-            expect(screen.getByLabelText('Título')).toBeVisible();
-        });
+  it('El sistema debe mostrar un mensaje si se ha modificado la tarea.', async () => {
+    api.put.mockResolvedValue({ status: 200 });
+    const showToastMock = vi.fn();
 
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
-        fireEvent.click(screen.getByText('Guardar Cambios'));
+    render(<Tarea tarea={tareaMock} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} showToast={showToastMock} />);
 
-        await waitFor(() => {
-            expect(onUpdate).toHaveBeenCalledWith(tarea.id, expect.objectContaining({ titulo: 'Tarea editada' }));
-        });
+    fireEvent.click(screen.getByText(/Editar/i));
+
+    await waitFor(() => {
+      expect(screen.getByLabelText('Título')).toBeInTheDocument();
     });
 
-    it('Debería mostrar un mensaje de éxito si la tarea se actualiza correctamente', async () => {
-        api.put.mockResolvedValue({ status: 200 });
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
 
-        render(
-            <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={onDelete}
-                    onUpdate={onUpdate}
-                    onDragStart={onDragStart}
-                />
-            </BrowserRouter>
-        );
+    fireEvent.click(screen.getByText(/Guardar Cambios/i));
 
-        const editarButton = screen.getByText('Editar'); // Cambiado a 'Editar'
-        fireEvent.click(editarButton);
+    await waitFor(() => {
+      expect(showToastMock).toHaveBeenCalledWith("Tarea actualizada exitosamente");
+    });
+  });
 
-        await waitFor(() => {
-            expect(screen.getByLabelText('Título')).toBeVisible();
-        });
+  it('En caso de error, el sistema debe mostrar un mensaje de error.', async () => {
+    api.put.mockRejectedValue(new Error('Error al actualizar la tarea'));
+    const showToastMock = vi.fn();
+    render(<Tarea tarea={tareaMock} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} showToast={showToastMock}/>);
 
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
-        fireEvent.click(screen.getByText('Guardar Cambios'));
+    fireEvent.click(screen.getByText(/Editar/i));
 
-        await waitFor(() => {
-           // expect(screen.getByText('Tarea actualizada exitosamente')).toBeVisible(); //AQUI
-        });
-
-        // expect(onUpdate).toHaveBeenCalled();
+    await waitFor(() => {
+      expect(screen.getByLabelText('Título')).toBeInTheDocument();
     });
 
-    it('Debería mostrar un mensaje de error si la actualización de la tarea falla', async () => {
-        api.put.mockRejectedValue(new Error('Error al actualizar la tarea'));
+    fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
 
-        render(
-            <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={onDelete}
-                    onUpdate={onUpdate}
-                    onDragStart={onDragStart}
-                />
-            </BrowserRouter>
-        );
+    fireEvent.click(screen.getByText(/Guardar Cambios/i));
 
-        const editarButton = screen.getByText('Editar'); // Cambiado a 'Editar'
-        fireEvent.click(editarButton);
-
-        await waitFor(() => {
-            expect(screen.getByLabelText('Título')).toBeVisible();
-        });
-
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea editada' } });
-        fireEvent.click(screen.getByText('Guardar Cambios'));
-
-        await waitFor(() => {
-            //expect(screen.getByText('Error al actualizar la tarea')).toBeVisible();  //AQUI
-        });
+    await waitFor(() => {
+      expect(showToastMock).toHaveBeenCalledWith("Error al actualizar la tarea", "error");
     });
+  });
 });

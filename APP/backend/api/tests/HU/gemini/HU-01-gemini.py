@@ -3,55 +3,65 @@ from django.test import TestCase
 from django.contrib.auth.models import User
 from rest_framework.test import APIClient
 from rest_framework import status
-from django.urls import reverse
 
 class UserRegistrationTest(TestCase):
     def setUp(self):
         self.client = APIClient()
-        self.registration_url = reverse('register')
+        self.register_url = '/api/user/register/'
 
     def test_user_can_register_with_valid_data(self):
         data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
-            'password': 'password123'
+            'username': 'newuser',
+            'email': 'newuser@example.com',
+            'password': 'StrongPassword123'
         }
-        response = self.client.post(self.registration_url, data, format='json')
+        response = self.client.post(self.register_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
-        self.assertEqual(User.objects.get().username, 'testuser')
-        self.assertEqual(User.objects.get().email, 'test@example.com')
+        self.assertEqual(User.objects.get().username, 'newuser')
+
+    def test_user_cannot_register_with_short_password(self):
+        data = {
+            'username': 'shortpassuser',
+            'email': 'shortpassuser@example.com',
+            'password': 'short'
+        }
+        response = self.client.post(self.register_url, data, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('La contraseña debe tener al menos 8 caracteres.', str(response.data))
+        self.assertEqual(User.objects.count(), 0)
 
     def test_user_cannot_register_with_existing_username(self):
-        User.objects.create_user(username='existinguser', password='password123')
+        User.objects.create_user(username='existinguser', email='test@example.com', password='StrongPassword123')
         data = {
             'username': 'existinguser',
-            'email': 'test@example.com',
-            'password': 'password123'
+            'email': 'newemail@example.com',
+            'password': 'AnotherStrongPassword123'
         }
-        response = self.client.post(self.registration_url, data, format='json')
+        response = self.client.post(self.register_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'El nombre de usuario ya está registrado.')
+        self.assertIn('El nombre de usuario ya está registrado.', str(response.data))
+        self.assertEqual(User.objects.count(), 1)
 
     def test_user_cannot_register_with_existing_email(self):
-        User.objects.create_user(username='testuser', email='existing@example.com', password='password123')
+        User.objects.create_user(username='testuser', email='existingemail@example.com', password='StrongPassword123')
         data = {
             'username': 'newuser',
-            'email': 'existing@example.com',
-            'password': 'password123'
+            'email': 'existingemail@example.com',
+            'password': 'AnotherStrongPassword123'
         }
-        response = self.client.post(self.registration_url, data, format='json')
+        response = self.client.post(self.register_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'El correo electrónico ya está registrado.')
+        self.assertIn('El correo electrónico ya está registrado.', str(response.data))
+        self.assertEqual(User.objects.count(), 1)
 
-    def test_user_cannot_register_with_missing_fields(self):
+    def test_user_cannot_register_with_missing_data(self):
         data = {
-            'username': 'testuser',
-            'email': 'test@example.com',
+            'username': 'missingdatauser',
+            'email': '',
+            'password': 'StrongPassword123'
         }
-        response = self.client.post(self.registration_url, data, format='json')
+        response = self.client.post(self.register_url, data, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn('error', response.data)
-        self.assertEqual(response.data['error'], 'Todos los campos son obligatorios.')
+        self.assertIn('Todos los campos son obligatorios.', str(response.data))
+        self.assertEqual(User.objects.count(), 0)

@@ -4,86 +4,65 @@ from rest_framework.test import APITestCase
 from django.contrib.auth.models import User
 from api.models import Tarea
 from datetime import date, timedelta
-from rest_framework_simplejwt.tokens import RefreshToken
 
-class CrearTareaTests(APITestCase):
+class TareaCreateTests(APITestCase):
     def setUp(self):
-        # Crear un usuario de prueba
         self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.force_authenticate(user=self.user)
+        self.api_url = '/api/tareas/'
 
-        # Obtener token para el usuario
-        refresh = RefreshToken.for_user(self.user)
-        self.token = str(refresh.access_token)
-        self.client.credentials(HTTP_AUTHORIZATION='Bearer ' + self.token)
-
-        # URL para crear tareas
-        self.url = '/api/tareas/'
-
-    def test_crear_tarea_exito(self):
-        """
-        Asegura que se puede crear una tarea con datos válidos.
-        """
-        data = {
+    def test_can_create_tarea_with_valid_data(self):
+        payload = {
             'titulo': 'Tarea de prueba',
-            'descripcion': 'Descripción de la tarea',
-            'fecha_vencimiento': date.today() + timedelta(days=7),
-            'prioridad': 'media',
-            'estado': 'pendiente'
+            'descripcion': 'Descripción de prueba',
+            'fecha_vencimiento': date.today() + timedelta(days=1),
+            'prioridad': 'alta',
+            'estado': 'pendiente',
         }
-        response = self.client.post(self.url, data, format='json')
+        response = self.client.post(self.api_url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Tarea.objects.count(), 1)
-        self.assertEqual(Tarea.objects.get().titulo, 'Tarea de prueba')
+        tarea = Tarea.objects.first()
+        self.assertEqual(tarea.titulo, 'Tarea de prueba')
+        self.assertEqual(tarea.usuario, self.user)
 
-    def test_crear_tarea_titulo_vacio(self):
-        """
-        Asegura que no se puede crear una tarea sin título.
-        """
-        data = {
-            'descripcion': 'Descripción de la tarea',
-            'fecha_vencimiento': date.today() + timedelta(days=7),
-            'prioridad': 'media',
-            'estado': 'pendiente'
+    def test_cannot_create_tarea_with_missing_titulo(self):
+        payload = {
+            'descripcion': 'Descripción de prueba',
+            'fecha_vencimiento': date.today() + timedelta(days=1),
+            'prioridad': 'alta',
+            'estado': 'pendiente',
         }
-        response = self.client.post(self.url, data, format='json')
+        response = self.client.post(self.api_url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_crear_tarea_fecha_vencimiento_vacia(self):
-        """
-        Asegura que se puede crear una tarea sin fecha de vencimiento.
-        """
-        data = {
+    def test_cannot_create_tarea_with_missing_fecha_vencimiento(self):
+        payload = {
             'titulo': 'Tarea de prueba',
-            'descripcion': 'Descripción de la tarea',
-            'prioridad': 'media',
-            'estado': 'pendiente'
+            'descripcion': 'Descripción de prueba',
+            'prioridad': 'alta',
+            'estado': 'pendiente',
         }
-        response = self.client.post(self.url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        response = self.client.post(self.api_url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
 
-    def test_crear_tarea_fecha_vencimiento_anterior(self):
-        """
-        Asegura que no se puede crear una tarea con fecha de vencimiento anterior a la actual.
-        """
-        data = {
+    def test_cannot_create_tarea_with_missing_prioridad(self):
+        payload = {
             'titulo': 'Tarea de prueba',
-            'descripcion': 'Descripción de la tarea',
+            'descripcion': 'Descripción de prueba',
+            'fecha_vencimiento': date.today() + timedelta(days=1),
+            'estado': 'pendiente',
+        }
+        response = self.client.post(self.api_url, payload, format='json')
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+
+    def test_cannot_create_tarea_with_past_fecha_vencimiento(self):
+        payload = {
+            'titulo': 'Tarea de prueba',
+            'descripcion': 'Descripción de prueba',
             'fecha_vencimiento': date.today() - timedelta(days=1),
-            'prioridad': 'media',
-            'estado': 'pendiente'
+            'prioridad': 'alta',
+            'estado': 'pendiente',
         }
-        response = self.client.post(self.url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-
-    def test_crear_tarea_prioridad_vacia(self):
-        """
-        Asegura que se puede crear una tarea sin prioridad.
-        """
-        data = {
-            'titulo': 'Tarea de prueba',
-            'descripcion': 'Descripción de la tarea',
-            'fecha_vencimiento': date.today() + timedelta(days=7),
-            'estado': 'pendiente'
-        }
-        response = self.client.post(self.url, data, format='json')
+        response = self.client.post(self.api_url, payload, format='json')
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)

@@ -6,45 +6,59 @@ from api.models import Tarea, Etiqueta
 
 class EtiquetaTests(APITestCase):
     def setUp(self):
+        # Crear un usuario de prueba
         self.user = User.objects.create_user(username='testuser', password='testpassword')
-        self.tarea = Tarea.objects.create(titulo='Test Tarea', usuario=self.user)
+        # Autenticar al usuario
         self.client.force_authenticate(user=self.user)
-        self.etiqueta_data = {'nombre': 'Test Etiqueta', 'tarea_id': self.tarea.id}
-        self.etiqueta_url = '/api/etiquetas/'
 
-    def test_puede_crear_etiqueta(self):
-        response = self.client.post(self.etiqueta_url, self.etiqueta_data, format='json')
+        # Crear una tarea de prueba
+        self.tarea = Tarea.objects.create(
+            titulo='Tarea de prueba',
+            descripcion='Descripción de la tarea',
+            usuario=self.user
+        )
+
+    def test_crear_etiqueta(self):
+        """
+        Asegura que se puede crear una etiqueta asociada a una tarea.
+        """
+        url = '/api/etiquetas/'
+        data = {'nombre': 'Etiqueta de prueba', 'tarea_id': self.tarea.id}
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(Etiqueta.objects.count(), 1)
-        self.assertEqual(Etiqueta.objects.get().nombre, 'Test Etiqueta')
+        self.assertEqual(Etiqueta.objects.get().nombre, 'Etiqueta de prueba')
         self.assertEqual(Etiqueta.objects.get().tarea, self.tarea)
 
-    def test_no_puede_crear_etiqueta_sin_autenticacion(self):
-        self.client.logout()
-        response = self.client.post(self.etiqueta_url, self.etiqueta_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_401_UNAUTHORIZED)
-
-    def test_no_puede_crear_etiqueta_con_tarea_inexistente(self):
-        data = {'nombre': 'Test Etiqueta', 'tarea_id': 999}
-        response = self.client.post(self.etiqueta_url, data, format='json')
+    def test_crear_etiqueta_misma_tarea_mismo_nombre_error(self):
+        """
+        Asegura que no se puede crear una etiqueta con el mismo nombre en la misma tarea.
+        """
+        Etiqueta.objects.create(nombre='EtiquetaDuplicada', tarea=self.tarea)
+        url = '/api/etiquetas/'
+        data = {'nombre': 'EtiquetaDuplicada', 'tarea_id': self.tarea.id}
+        response = self.client.post(url, data)
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("La tarea no existe.", str(response.data))
 
-    def test_no_puede_crear_etiqueta_duplicada(self):
-        Etiqueta.objects.create(nombre='Test Etiqueta', tarea=self.tarea)
-        response = self.client.post(self.etiqueta_url, self.etiqueta_data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
-        self.assertIn("Ya existe una etiqueta con este nombre en esta tarea.", str(response.data))
-
-    def test_puede_eliminar_etiqueta(self):
-        etiqueta = Etiqueta.objects.create(nombre='Test Etiqueta', tarea=self.tarea)
-        delete_url = f'/api/etiquetas/delete/{etiqueta.id}/'
-        response = self.client.delete(delete_url)
+    def test_eliminar_etiqueta(self):
+        """
+        Asegura que se puede eliminar una etiqueta existente.
+        """
+        etiqueta = Etiqueta.objects.create(nombre='Etiqueta a eliminar', tarea=self.tarea)
+        url = f'/api/etiquetas/delete/{etiqueta.id}/'
+        response = self.client.delete(url)
         self.assertEqual(response.status_code, status.HTTP_204_NO_CONTENT)
         self.assertEqual(Etiqueta.objects.count(), 0)
 
-    def test_no_puede_eliminar_etiqueta_inexistente(self):
-        delete_url = '/api/etiquetas/delete/999/'
-        response = self.client.delete(delete_url)
-        self.assertEqual(response.status_code, status.HTTP_404_NOT_FOUND)
-        self.assertIn("Etiqueta no encontrada.", str(response.data))
+    def test_listar_etiquetas_por_tarea(self):
+        """
+        Asegura que se pueden listar las etiquetas asociadas a una tarea.
+        """
+        etiqueta1 = Etiqueta.objects.create(nombre='Etiqueta 1', tarea=self.tarea)
+        etiqueta2 = Etiqueta.objects.create(nombre='Etiqueta 2', tarea=self.tarea)
+        url = f'/api/etiquetas/?tarea_id={self.tarea.id}'
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)
+        self.assertEqual(response.data[0]['nombre'], etiqueta1.nombre)
+        self.assertEqual(response.data[1]['nombre'], etiqueta2.nombre)

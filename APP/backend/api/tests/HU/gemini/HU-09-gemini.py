@@ -1,88 +1,35 @@
-# /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-09-gemini.test.jsx
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../pages/Home';
-import api from '../../../../api';
-import { BrowserRouter } from 'react-router-dom';
+# /home/jesus/python/TFG/APP/backend/api/tests/HU/gemini/HU-09-gemini.py
+from django.test import TestCase
+from django.contrib.auth.models import User
+from rest_framework.test import APIClient
+from rest_framework import status
+from api.models import Tarea
 
-vi.mock('../../../../api');
+class BusquedaTareasTest(TestCase):
+    def setUp(self):
+        self.client = APIClient()
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.force_authenticate(user=self.user)
 
-describe('HU-09: Busqueda de Tareas', () => {
-    it('Debería filtrar las tareas por titulo al ingresar una palabra clave', async () => {
-        const tareasMock = [
-            { id: 1, titulo: 'Tarea urgente', descripcion: 'Descripción de la tarea urgente', estado: 'pendiente', prioridad: 'alta', fecha_vencimiento: '2024-12-31' },
-            { id: 2, titulo: 'Tarea importante', descripcion: 'Descripción de la tarea importante', estado: 'en_progreso', prioridad: 'media', fecha_vencimiento: '2024-12-25' },
-            { id: 3, titulo: 'Tarea sencilla', descripcion: 'Descripción de la tarea sencilla', estado: 'completada', prioridad: 'baja', fecha_vencimiento: '2024-12-20' },
-        ];
-        api.get.mockResolvedValue({ data: tareasMock });
+        self.tarea1 = Tarea.objects.create(
+            titulo='Tarea con palabra clave',
+            descripcion='Esta tarea tiene la palabra clave en la descripción',
+            usuario=self.user
+        )
+        self.tarea2 = Tarea.objects.create(
+            titulo='Otra tarea',
+            descripcion='Descripción sin la palabra clave',
+            usuario=self.user
+        )
+        self.tarea3 = Tarea.objects.create(
+            titulo='Tarea diferente con palabra clave',
+            descripcion='Más descripción con la palabra clave',
+            usuario=self.user
+        )
 
-        render(
-            <BrowserRouter>
-                <Home />
-            </BrowserRouter>
-        );
+    def test_busqueda_por_palabra_clave(self):
+        response = self.client.get('/api/tareas/?search=palabra clave')  # Asume que tienes un filtro de búsqueda
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
 
-        await waitFor(() => expect(api.get).toHaveBeenCalled());
-
-        const inputBusqueda = screen.getByPlaceholderText('Buscar tareas...');
-        fireEvent.change(inputBusqueda, { target: { value: 'urgente' } });
-
-        await waitFor(() => {
-            expect(screen.getByText('Tarea urgente')).toBeVisible();
-            expect(screen.queryByText('Tarea importante')).toBeNull();
-            expect(screen.queryByText('Tarea sencilla')).toBeNull();
-        });
-    });
-
-    it('Debería filtrar las tareas por descripcion al ingresar una palabra clave', async () => {
-        const tareasMock = [
-            { id: 1, titulo: 'Tarea urgente', descripcion: 'Descripción de la tarea urgente', estado: 'pendiente', prioridad: 'alta', fecha_vencimiento: '2024-12-31' },
-            { id: 2, titulo: 'Tarea importante', descripcion: 'Descripción de la tarea importante', estado: 'en_progreso', prioridad: 'media', fecha_vencimiento: '2024-12-25' },
-            { id: 3, titulo: 'Tarea sencilla', descripcion: 'Descripción de la tarea sencilla', estado: 'completada', prioridad: 'baja', fecha_vencimiento: '2024-12-20' },
-        ];
-        api.get.mockResolvedValue({ data: tareasMock });
-
-        render(
-            <BrowserRouter>
-                <Home />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => expect(api.get).toHaveBeenCalled());
-
-        const inputBusqueda = screen.getByPlaceholderText('Buscar tareas...');
-        fireEvent.change(inputBusqueda, { target: { value: 'importante' } });
-
-        await waitFor(() => {
-            expect(screen.getByText('Tarea importante')).toBeVisible();
-            expect(screen.queryByText('Tarea urgente')).toBeNull();
-            expect(screen.queryByText('Tarea sencilla')).toBeNull();
-        });
-    });
-
-    it('Debería mostrar todas las tareas cuando el input de búsqueda está vacio', async () => {
-        const tareasMock = [
-            { id: 1, titulo: 'Tarea urgente', descripcion: 'Descripción de la tarea urgente', estado: 'pendiente', prioridad: 'alta', fecha_vencimiento: '2024-12-31' },
-            { id: 2, titulo: 'Tarea importante', descripcion: 'Descripción de la tarea importante', estado: 'en_progreso', prioridad: 'media', fecha_vencimiento: '2024-12-25' },
-            { id: 3, titulo: 'Tarea sencilla', descripcion: 'Descripción de la tarea sencilla', estado: 'completada', prioridad: 'baja', fecha_vencimiento: '2024-12-20' },
-        ];
-        api.get.mockResolvedValue({ data: tareasMock });
-
-        render(
-            <BrowserRouter>
-                <Home />
-            </BrowserRouter>
-        );
-
-        await waitFor(() => expect(api.get).toHaveBeenCalled());
-
-        const inputBusqueda = screen.getByPlaceholderText('Buscar tareas...');
-        fireEvent.change(inputBusqueda, { target: { value: '' } });
-
-        await waitFor(() => {
-            expect(screen.getByText('Tarea urgente')).toBeVisible();
-            expect(screen.getByText('Tarea importante')).toBeVisible();
-            expect(screen.getByText('Tarea sencilla')).toBeVisible();
-        });
-    });
-});
+        data = response.json()
+        self.assertEqual(len(data), 3) # Ajustar segun filtro implementado en el backend

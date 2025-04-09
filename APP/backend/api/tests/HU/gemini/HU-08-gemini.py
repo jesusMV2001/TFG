@@ -1,95 +1,75 @@
-# /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-08-gemini.test.jsx
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../pages/Home';
-import api from '../../../../api';
+# /home/jesus/python/TFG/APP/backend/api/tests/HU/gemini/HU-08-gemini.py
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.test import APITestCase
+from api.models import Tarea
+from datetime import datetime
+import pytz
 
-vi.mock('../../../../api');
+class OrdenarTareasTests(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.client.force_authenticate(user=self.user)
 
-describe('HU-08: Ordenar Tareas', () => {
-    it('Debería renderizar los botones de ordenamiento', () => {
-        api.get.mockResolvedValue({ data: [] });
-        render(<Home />);
-        expect(screen.getByText(/Ordenar por Prioridad/i)).toBeInTheDocument();
-        expect(screen.getByText(/Ordenar por Fecha/i)).toBeInTheDocument();
-    });
+        # Crear tareas con diferentes prioridades y fechas de vencimiento
+        self.tarea_alta = Tarea.objects.create(
+            titulo='Tarea Alta',
+            prioridad='alta',
+            fecha_vencimiento=datetime(2024, 12, 31, tzinfo=pytz.utc),
+            usuario=self.user
+        )
+        self.tarea_baja = Tarea.objects.create(
+            titulo='Tarea Baja',
+            prioridad='baja',
+            fecha_vencimiento=datetime(2024, 12, 25, tzinfo=pytz.utc),
+            usuario=self.user
+        )
+        self.tarea_media = Tarea.objects.create(
+            titulo='Tarea Media',
+            prioridad='media',
+            fecha_vencimiento=datetime(2025, 1, 5, tzinfo=pytz.utc),
+            usuario=self.user
+        )
 
-    it('Debería cambiar la dirección del ordenamiento de prioridad al hacer click', async () => {
-        api.get.mockResolvedValue({ data: [] });
-        render(<Home />);
-        const prioridadButton = screen.getByText(/Ordenar por Prioridad/i);
-        
-        fireEvent.click(prioridadButton);
-        await waitFor(() => expect(prioridadButton.textContent).toContain('▼'));
+    def test_ordenar_tareas_por_prioridad(self):
+        response = self.client.get('/api/tareas/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
 
-        fireEvent.click(prioridadButton);
-        await waitFor(() => expect(prioridadButton.textContent).toContain('▲'));
-    });
+        # Verificar el orden esperado: alta, media, baja
+        self.assertEqual(data[0]['titulo'], 'Tarea Alta')
+        self.assertEqual(data[1]['titulo'], 'Tarea Media')
+        self.assertEqual(data[2]['titulo'], 'Tarea Baja')
 
-    it('Debería cambiar la dirección del ordenamiento de fecha al hacer click', async () => {
-        api.get.mockResolvedValue({ data: [] });
-        render(<Home />);
-        const fechaButton = screen.getByText(/Ordenar por Fecha/i);
+    def test_ordenar_tareas_por_fecha_vencimiento(self):
+        # Invertir el orden de creación para forzar una ordenación por fecha
+        Tarea.objects.all().delete()  # Eliminar tareas existentes
 
-        fireEvent.click(fechaButton);
-        await waitFor(() => expect(fechaButton.textContent).toContain('▼'));
+        tarea_media = Tarea.objects.create(
+            titulo='Tarea Media',
+            prioridad='media',
+            fecha_vencimiento=datetime(2025, 1, 5, tzinfo=pytz.utc),
+            usuario=self.user
+        )
 
-        fireEvent.click(fechaButton);
-        await waitFor(() => expect(fechaButton.textContent).toContain('▲'));
-    });
+        tarea_alta = Tarea.objects.create(
+            titulo='Tarea Alta',
+            prioridad='alta',
+            fecha_vencimiento=datetime(2024, 12, 31, tzinfo=pytz.utc),
+            usuario=self.user
+        )
+        tarea_baja = Tarea.objects.create(
+            titulo='Tarea Baja',
+            prioridad='baja',
+            fecha_vencimiento=datetime(2024, 12, 25, tzinfo=pytz.utc),
+            usuario=self.user
+        )
 
-    it('Debería ordenar las tareas por prioridad correctamente', async () => {
-        const mockTareas = [
-            { id: 1, titulo: 'Tarea Baja', prioridad: 'baja', fecha_vencimiento: '2024-12-31', estado: 'pendiente' },
-            { id: 2, titulo: 'Tarea Alta', prioridad: 'alta', fecha_vencimiento: '2024-12-31', estado: 'pendiente' },
-            { id: 3, titulo: 'Tarea Media', prioridad: 'media', fecha_vencimiento: '2024-12-31', estado: 'pendiente' },
-        ];
-        api.get.mockResolvedValue({ data: mockTareas });
-        render(<Home />);
+        response = self.client.get('/api/tareas/')
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        data = response.json()
 
-        const prioridadButton = screen.getByText(/Ordenar por Prioridad/i);
-        fireEvent.click(prioridadButton);
-        await waitFor(() => {
-            const tareas = screen.getAllByText(/Tarea/i);
-            expect(tareas[0].textContent).toContain('Tarea Alta');
-            expect(tareas[1].textContent).toContain('Tarea Media');
-            expect(tareas[2].textContent).toContain('Tarea Baja');
-        });
-
-        fireEvent.click(prioridadButton);
-        await waitFor(() => {
-            const tareas = screen.getAllByText(/Tarea/i);
-            expect(tareas[0].textContent).toContain('Tarea Baja');
-            expect(tareas[1].textContent).toContain('Tarea Media');
-            expect(tareas[2].textContent).toContain('Tarea Alta');
-        });
-    });
-
-    it('Debería ordenar las tareas por fecha correctamente', async () => {
-        const mockTareas = [
-            { id: 1, titulo: 'Tarea 2025', prioridad: 'media', fecha_vencimiento: '2025-01-01', estado: 'pendiente' },
-            { id: 2, titulo: 'Tarea 2023', prioridad: 'media', fecha_vencimiento: '2023-01-01', estado: 'pendiente' },
-            { id: 3, titulo: 'Tarea 2024', prioridad: 'media', fecha_vencimiento: '2024-01-01', estado: 'pendiente' },
-        ];
-        api.get.mockResolvedValue({ data: mockTareas });
-        render(<Home />);
-
-        const fechaButton = screen.getByText(/Ordenar por Fecha/i);
-        fireEvent.click(fechaButton);
-
-        await waitFor(() => {
-            const tareas = screen.getAllByText(/Tarea/i);
-            expect(tareas[0].textContent).toContain('Tarea 2023');
-            expect(tareas[1].textContent).toContain('Tarea 2024');
-            expect(tareas[2].textContent).toContain('Tarea 2025');
-        });
-
-        fireEvent.click(fechaButton);
-        await waitFor(() => {
-            const tareas = screen.getAllByText(/Tarea/i);
-            expect(tareas[0].textContent).toContain('Tarea 2025');
-            expect(tareas[1].textContent).toContain('Tarea 2024');
-            expect(tareas[2].textContent).toContain('Tarea 2023');
-        });
-    });
-});
+        # Verificar el orden esperado: baja, alta, media
+        self.assertEqual(data[0]['titulo'], 'Tarea Baja')
+        self.assertEqual(data[1]['titulo'], 'Tarea Alta')
+        self.assertEqual(data[2]['titulo'], 'Tarea Media')

@@ -7,45 +7,70 @@ import api from '../../../../api';
 vi.mock('../../../../api');
 
 describe('HU-03: Crear tarea', () => {
-    const mockOnAddTarea = vi.fn();
-    const mockShowToast = vi.fn();
+    it('El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial', async () => {
+        api.post.mockResolvedValue({ status: 201 });
 
-    const renderComponent = () => {
-        render(<TareaForm onAddTarea={mockOnAddTarea} showToast={mockShowToast} />);
-    };
+        const onAddTarea = vi.fn();
+        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
 
-    it('El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial.', async () => {
-        renderComponent();
+        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
+        fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'Descripción de prueba' } });
+        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2024-12-31' } });
+        fireEvent.change(screen.getByLabelText('Prioridad'), { target: { value: 'alta' } });
+        fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'pendiente' } });
 
-        fireEvent.change(screen.getByLabelText(/Título/), { target: { value: 'Tarea de prueba' } });
-        fireEvent.change(screen.getByLabelText(/Descripción/), { target: { value: 'Descripción de la tarea de prueba' } });
-        fireEvent.change(screen.getByLabelText(/Fecha de Vencimiento/), { target: { value: '2024-12-31' } });
-        fireEvent.change(screen.getByLabelText(/Prioridad/), { target: { value: 'alta' } });
-        fireEvent.change(screen.getByLabelText(/Estado/), { target: { value: 'pendiente' } });
+        fireEvent.click(screen.getByText('Guardar Cambios'));
 
-        fireEvent.click(screen.getByText(/Guardar Cambios/));
-
-        expect(mockOnAddTarea).toHaveBeenCalled();
+        await waitFor(() => {
+            expect(onAddTarea).toHaveBeenCalledWith({
+                titulo: 'Tarea de prueba',
+                descripcion: 'Descripción de prueba',
+                fecha_vencimiento: '2024-12-31',
+                prioridad: 'alta',
+                estado: 'pendiente',
+                etiquetas: [],
+            });
+        });
     });
 
-    it('El titulo, fecha de vencimiento y prioridad no pueden estar vacios.', async () => {
-        renderComponent();
+    it('Muestra un error si el título está vacío', async () => {
+        const onAddTarea = vi.fn();
+        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
 
-        fireEvent.click(screen.getByText(/Guardar Cambios/));
+        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2024-12-31' } });
 
-        expect(mockOnAddTarea).not.toHaveBeenCalled();
+        fireEvent.click(screen.getByText('Guardar Cambios'));
+
+        await waitFor(() => {
+            expect(screen.getByText('Título es requerido')).toBeVisible();
+            expect(onAddTarea).not.toHaveBeenCalled();
+        });
     });
 
-    it('La fecha de vencimiento no debe ser anterior a la fecha actual.', async () => {
-        renderComponent();
+    it('Muestra un error si la fecha de vencimiento está vacía', async () => {
+        const onAddTarea = vi.fn();
+        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
 
-        fireEvent.change(screen.getByLabelText(/Título/), { target: { value: 'Tarea de prueba' } });
-        fireEvent.change(screen.getByLabelText(/Fecha de Vencimiento/), { target: { value: '2023-01-01' } });
-        fireEvent.change(screen.getByLabelText(/Prioridad/), { target: { value: 'alta' } });
+        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
 
-        fireEvent.click(screen.getByText(/Guardar Cambios/));
+        fireEvent.click(screen.getByText('Guardar Cambios'));
 
-        expect(mockOnAddTarea).not.toHaveBeenCalled();
-        expect(screen.getByText(/La fecha de vencimiento no puede ser menor a la fecha actual./)).toBeInTheDocument();
+        await waitFor(() => {
+            expect(screen.getByText('Fecha de vencimiento es requerida')).toBeVisible();
+            expect(onAddTarea).not.toHaveBeenCalled();
+        });
+    });
+
+    it('La fecha de vencimiento no debe ser anterior a la fecha actual', async () => {
+        render(<TareaForm onAddTarea={vi.fn()} showToast={vi.fn()} />);
+
+        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
+        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2020-01-01' } });
+
+        fireEvent.click(screen.getByText('Guardar Cambios'));
+
+        await waitFor(() => {
+            expect(screen.getByText('La fecha de vencimiento no puede ser menor a la fecha actual.')).toBeVisible();
+        });
     });
 });

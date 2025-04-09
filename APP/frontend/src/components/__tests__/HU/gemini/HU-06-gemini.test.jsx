@@ -3,90 +3,86 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Home from '../../../pages/Home';
 import api from '../../../../api';
+import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');
 
 describe('HU-06: Eliminar tarea', () => {
+  it('Al eliminar una tarea, esta debe desaparecer de la lista.', async () => {
     const mockTareas = [
-        { id: 1, titulo: 'Tarea 1', descripcion: 'Descripcion 1', estado: 'pendiente', prioridad: 'alta', fecha_vencimiento: '2024-01-01' },
-        { id: 2, titulo: 'Tarea 2', descripcion: 'Descripcion 2', estado: 'en_progreso', prioridad: 'media', fecha_vencimiento: '2024-01-02' },
+      { id: 1, titulo: 'Tarea 1', descripcion: 'Descripcion 1', estado: 'pendiente', prioridad: 'media', fecha_vencimiento: '2024-01-01' },
+      { id: 2, titulo: 'Tarea 2', descripcion: 'Descripcion 2', estado: 'en_progreso', prioridad: 'alta', fecha_vencimiento: '2024-01-02' },
     ];
 
-    it('Al eliminar una tarea, esta debe desaparecer de la lista.', async () => {
-        api.get.mockResolvedValue({ data: mockTareas });
-        api.delete.mockResolvedValue({ status: 204 });
+    api.get.mockResolvedValue({ data: mockTareas });
+    api.delete.mockResolvedValue({ status: 204 });
 
-        render(<Home />);
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
 
-        await waitFor(() => {
-            expect(screen.getByText('Tarea 1')).toBeInTheDocument();
-            expect(screen.getByText('Tarea 2')).toBeInTheDocument();
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
+    const deleteButton = await screen.findByRole('button', { name: /eliminar/i, id: 'delete-task-1' }); // Asegúrate de que el botón tenga un role y name accesibles
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/'));
+
+    // Simula la respuesta después de la eliminación, excluyendo la tarea eliminada
+    api.get.mockResolvedValue({ data: [mockTareas[1]] });
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(2));
+    
+    await waitFor(() => {
+            const tareaEliminada = screen.queryByText('Tarea 1');
+            expect(tareaEliminada).toBeNull();
         });
+  });
 
-        const deleteButton = screen.getAllByRole('button', { hidden: false,  name: /eliminar/i })[0];
-        fireEvent.click(deleteButton);
+  it('El sistema debe mostrar un mensaje si se ha borrado la tarea.', async () => {
+    const mockTareas = [{ id: 1, titulo: 'Tarea 1', descripcion: 'Descripcion 1', estado: 'pendiente', prioridad: 'media', fecha_vencimiento: '2024-01-01' }];
+    api.get.mockResolvedValue({ data: mockTareas });
+    api.delete.mockResolvedValue({ status: 204 });
 
-        await waitFor(() => {
-            expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/');
-        });
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
 
-        api.get.mockResolvedValue({ data: [mockTareas[1]] });
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
 
-        await waitFor(() => {
-           
-        });
+    const deleteButton = await screen.findByRole('button', { name: /eliminar/i, id: 'delete-task-1' });
+    fireEvent.click(deleteButton);
 
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/'));
 
-        
+    await waitFor(() => {
+      expect(screen.getByText(/tarea eliminada exitosamente/i)).toBeVisible();
     });
+  });
 
-    it('El sistema debe mostrar un mensaje si se ha borrado la tarea.', async () => {
-        api.get.mockResolvedValue({ data: mockTareas });
-        api.delete.mockResolvedValue({ status: 204 });
-        
-        const mockSetToast = vi.fn();
-        vi.spyOn(Home.prototype, 'showToast').mockImplementation(mockSetToast);
-    
-        render(<Home />);
-        
-        await waitFor(() => {
-            expect(screen.getByText('Tarea 1')).toBeInTheDocument();
-        });
-    
-        const deleteButton = screen.getAllByRole('button', { hidden: false,  name: /eliminar/i })[0];
-        fireEvent.click(deleteButton);
-    
-        await waitFor(() => {
-            expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/');
-        });
-    
-        await waitFor(() => {
-            expect(mockSetToast).toHaveBeenCalledWith("Tarea eliminada exitosamente");
-        });
+  it('En caso de error, el sistema debe mostrar un mensaje de error.', async () => {
+    const mockTareas = [{ id: 1, titulo: 'Tarea 1', descripcion: 'Descripcion 1', estado: 'pendiente', prioridad: 'media', fecha_vencimiento: '2024-01-01' }];
+    api.get.mockResolvedValue({ data: mockTareas });
+    api.delete.mockRejectedValue(new Error('Error al eliminar la tarea'));
+
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
+
+    await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+
+    const deleteButton = await screen.findByRole('button', { name: /eliminar/i, id: 'delete-task-1' });
+    fireEvent.click(deleteButton);
+
+    await waitFor(() => expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/'));
+
+    await waitFor(() => {
+      expect(screen.getByText(/error al eliminar la tarea/i)).toBeVisible();
     });
-
-    it('En caso de error, el sistema debe mostrar un mensaje de error.', async () => {
-        api.get.mockResolvedValue({ data: mockTareas });
-        api.delete.mockRejectedValue(new Error('Error al eliminar'));
-
-        const mockSetToast = vi.fn();
-        vi.spyOn(Home.prototype, 'showToast').mockImplementation(mockSetToast);
-
-        render(<Home />);
-
-        await waitFor(() => {
-            expect(screen.getByText('Tarea 1')).toBeInTheDocument();
-        });
-
-        const deleteButton = screen.getAllByRole('button', { hidden: false,  name: /eliminar/i })[0];
-        fireEvent.click(deleteButton);
-
-        await waitFor(() => {
-            expect(api.delete).toHaveBeenCalledWith('/api/tareas/delete/1/');
-        });
-
-        await waitFor(() => {
-            expect(mockSetToast).toHaveBeenCalledWith("Error al eliminar la tarea", "error");
-        });
-    });
+  });
 });

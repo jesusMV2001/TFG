@@ -3,115 +3,104 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Home from '../../../pages/Home';
 import api from '../../../../api';
+import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');
 
-const mockTareas = [
-    { id: 1, titulo: 'Tarea 1', prioridad: 'alta', fecha_vencimiento: '2024-01-05', estado: 'pendiente', descripcion: 'descripcion 1' },
-    { id: 2, titulo: 'Tarea 2', prioridad: 'baja', fecha_vencimiento: '2024-01-10', estado: 'pendiente', descripcion: 'descripcion 2' },
-    { id: 3, titulo: 'Tarea 3', prioridad: 'media', fecha_vencimiento: '2024-01-01', estado: 'pendiente', descripcion: 'descripcion 3' },
-];
-
 describe('HU-08: Ordenar Tareas', () => {
+    const mockTareas = [
+        { id: 1, titulo: 'Tarea 1', prioridad: 'alta', fecha_vencimiento: '2024-12-31', estado: 'pendiente' },
+        { id: 2, titulo: 'Tarea 2', prioridad: 'baja', fecha_vencimiento: '2024-12-25', estado: 'pendiente' },
+        { id: 3, titulo: 'Tarea 3', prioridad: 'media', fecha_vencimiento: '2025-01-05', estado: 'pendiente' },
+    ];
 
-    it('Debería ordenar las tareas por prioridad al hacer clic en el botón "Ordenar por Prioridad"', async () => {
+    it('Debería ordenar las tareas por prioridad al hacer clic en el botón de prioridad', async () => {
         api.get.mockResolvedValue({ data: mockTareas });
 
-        render(<Home />);
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
 
-        await waitFor(() => expect(api.get).toHaveBeenCalledWith("/api/tareas/"));
+        await waitFor(() => expect(api.get).toHaveBeenCalled());
 
-        const ordenarPrioridadButton = screen.getByText(/Ordenar por Prioridad/i);
-        fireEvent.click(ordenarPrioridadButton);
+        const prioridadButton = screen.getByText(/Ordenar por Prioridad/i);
+        fireEvent.click(prioridadButton);
 
-        const tarea1 = screen.getByText('Tarea 1');
-        const tarea2 = screen.getByText('Tarea 2');
-        const tarea3 = screen.getByText('Tarea 3');
-
-        const tareasContainer = tarea1.closest('.space-y-4');
-
-        const children = [...tareasContainer.children];
-        const indexTarea1 = children.findIndex(child => child.textContent.includes('Tarea 1'));
-        const indexTarea2 = children.findIndex(child => child.textContent.includes('Tarea 2'));
-        const indexTarea3 = children.findIndex(child => child.textContent.includes('Tarea 3'));
-
-        expect(indexTarea1).toBeLessThan(indexTarea3); // Alta antes de Media
-        expect(indexTarea3).toBeLessThan(indexTarea2); // Media antes de Baja
+        await waitFor(() => {
+            const tareasRenderizadas = screen.getAllByText(/Tarea/);
+            expect(tareasRenderizadas[0].textContent).toBe('Tarea 1');
+            expect(tareasRenderizadas[1].textContent).toBe('Tarea 3');
+            expect(tareasRenderizadas[2].textContent).toBe('Tarea 2');
+        });
     });
 
-    it('Debería ordenar las tareas por fecha al hacer clic en el botón "Ordenar por Fecha"', async () => {
+    it('Debería ordenar las tareas por fecha al hacer clic en el botón de fecha', async () => {
         api.get.mockResolvedValue({ data: mockTareas });
 
-        render(<Home />);
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
 
-        await waitFor(() => expect(api.get).toHaveBeenCalledWith("/api/tareas/"));
+        await waitFor(() => expect(api.get).toHaveBeenCalled());
 
-        const ordenarFechaButton = screen.getByText(/Ordenar por Fecha/i);
-        fireEvent.click(ordenarFechaButton);
+        const fechaButton = screen.getByText(/Ordenar por Fecha/i);
+        fireEvent.click(fechaButton);
 
-        const tarea1 = screen.getByText('Tarea 1');
-        const tarea2 = screen.getByText('Tarea 2');
-        const tarea3 = screen.getByText('Tarea 3');
-
-        const tareasContainer = tarea1.closest('.space-y-4');
-
-        const children = [...tareasContainer.children];
-        const indexTarea1 = children.findIndex(child => child.textContent.includes('Tarea 1'));
-        const indexTarea2 = children.findIndex(child => child.textContent.includes('Tarea 2'));
-        const indexTarea3 = children.findIndex(child => child.textContent.includes('Tarea 3'));
-
-        expect(indexTarea3).toBeLessThan(indexTarea1); // 2024-01-01 antes de 2024-01-05
-        expect(indexTarea1).toBeLessThan(indexTarea2); // 2024-01-05 antes de 2024-01-10
+        await waitFor(() => {
+            const tareasRenderizadas = screen.getAllByText(/Tarea/);
+             expect(tareasRenderizadas[0].textContent).toBe('Tarea 2');
+             expect(tareasRenderizadas[1].textContent).toBe('Tarea 1');
+             expect(tareasRenderizadas[2].textContent).toBe('Tarea 3');
+        });
     });
 
-    it('Debería invertir el orden de la prioridad al hacer doble clic en el botón "Ordenar por Prioridad"', async () => {
+    it('Debería cambiar la dirección del ordenamiento de prioridad al hacer clic en el botón de prioridad dos veces', async () => {
         api.get.mockResolvedValue({ data: mockTareas });
 
-        render(<Home />);
+        render(
+            <BrowserRouter>
+                <Home />
+            </BrowserRouter>
+        );
 
-        await waitFor(() => expect(api.get).toHaveBeenCalledWith("/api/tareas/"));
+        await waitFor(() => expect(api.get).toHaveBeenCalled());
 
-        const ordenarPrioridadButton = screen.getByText(/Ordenar por Prioridad/i);
-        fireEvent.click(ordenarPrioridadButton);
-        fireEvent.click(ordenarPrioridadButton);
+        const prioridadButton = screen.getByText(/Ordenar por Prioridad/i);
+        fireEvent.click(prioridadButton);
+        fireEvent.click(prioridadButton);
 
-        const tarea1 = screen.getByText('Tarea 1');
-        const tarea2 = screen.getByText('Tarea 2');
-        const tarea3 = screen.getByText('Tarea 3');
-
-        const tareasContainer = tarea1.closest('.space-y-4');
-
-        const children = [...tareasContainer.children];
-        const indexTarea1 = children.findIndex(child => child.textContent.includes('Tarea 1'));
-        const indexTarea2 = children.findIndex(child => child.textContent.includes('Tarea 2'));
-        const indexTarea3 = children.findIndex(child => child.textContent.includes('Tarea 3'));
-        expect(indexTarea2).toBeLessThan(indexTarea3); // Baja antes de Media
-        expect(indexTarea3).toBeLessThan(indexTarea1); // Media antes de Alta
+        await waitFor(() => {
+            const tareasRenderizadas = screen.getAllByText(/Tarea/);
+            expect(tareasRenderizadas[0].textContent).toBe('Tarea 2');
+            expect(tareasRenderizadas[1].textContent).toBe('Tarea 3');
+            expect(tareasRenderizadas[2].textContent).toBe('Tarea 1');
+        });
     });
 
-    it('Debería invertir el orden de la fecha al hacer doble clic en el botón "Ordenar por Fecha"', async () => {
-        api.get.mockResolvedValue({ data: mockTareas });
+    it('Debería cambiar la dirección del ordenamiento de fecha al hacer clic en el botón de fecha dos veces', async () => {
+         api.get.mockResolvedValue({ data: mockTareas });
 
-        render(<Home />);
+         render(
+             <BrowserRouter>
+                 <Home />
+             </BrowserRouter>
+         );
 
-        await waitFor(() => expect(api.get).toHaveBeenCalledWith("/api/tareas/"));
+         await waitFor(() => expect(api.get).toHaveBeenCalled());
 
-        const ordenarFechaButton = screen.getByText(/Ordenar por Fecha/i);
-        fireEvent.click(ordenarFechaButton);
-        fireEvent.click(ordenarFechaButton);
+         const fechaButton = screen.getByText(/Ordenar por Fecha/i);
+         fireEvent.click(fechaButton);
+         fireEvent.click(fechaButton);
 
-        const tarea1 = screen.getByText('Tarea 1');
-        const tarea2 = screen.getByText('Tarea 2');
-        const tarea3 = screen.getByText('Tarea 3');
-
-        const tareasContainer = tarea1.closest('.space-y-4');
-
-        const children = [...tareasContainer.children];
-        const indexTarea1 = children.findIndex(child => child.textContent.includes('Tarea 1'));
-        const indexTarea2 = children.findIndex(child => child.textContent.includes('Tarea 2'));
-        const indexTarea3 = children.findIndex(child => child.textContent.includes('Tarea 3'));
-
-        expect(indexTarea2).toBeLessThan(indexTarea1); // 2024-01-10 antes de 2024-01-05
-        expect(indexTarea1).toBeLessThan(indexTarea3); // 2024-01-05 antes de 2024-01-01
-    });
+         await waitFor(() => {
+             const tareasRenderizadas = screen.getAllByText(/Tarea/);
+             expect(tareasRenderizadas[0].textContent).toBe('Tarea 3');
+             expect(tareasRenderizadas[1].textContent).toBe('Tarea 1');
+             expect(tareasRenderizadas[2].textContent).toBe('Tarea 2');
+         });
+     });
 });

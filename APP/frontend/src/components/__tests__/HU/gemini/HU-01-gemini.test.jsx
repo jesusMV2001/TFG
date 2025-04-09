@@ -15,7 +15,8 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-01: Registro de Usuarios', () => {
-    it('El usuario puede ingresar un nombre, correo y contrasena.', () => {
+
+    it('El usuario puede ingresar nombre, correo y contraseña', () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
@@ -35,23 +36,7 @@ describe('HU-01: Registro de Usuarios', () => {
         expect(passwordInput.value).toBe('password123');
     });
 
-    it('Ningun campo debe estar vacio.', async () => {
-        render(
-            <BrowserRouter>
-                <UsuarioForm route="/api/user/register/" method="register" />
-            </BrowserRouter>
-        );
-
-        const registerButton = screen.getByText('Register');
-
-        fireEvent.click(registerButton);
-
-        await waitFor(() => {
-            expect(screen.getByText('Username')).toBeDefined();
-        });
-    });
-
-    it('La contrasena debe tener un minimo de 8 caracteres.', async () => {
+    it('Muestra un mensaje de error si la contraseña es menor de 8 caracteres', async () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
@@ -65,18 +50,19 @@ describe('HU-01: Registro de Usuarios', () => {
 
         fireEvent.change(usernameInput, { target: { value: 'testuser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: '1234567' } });
-
+        fireEvent.change(passwordInput, { target: { value: 'short' } });
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-          expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeDefined();
+            expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument();
         });
     });
 
-    it('Se muestra un mensaje de error si el correo o nombre ya esta registrado.', async () => {
+    it('Muestra un mensaje de error si el correo o nombre ya está registrado', async () => {
         api.post.mockRejectedValue({
-            response: { data: { error: 'El usuario ya existe.' } },
+            response: {
+                data: { error: 'El nombre de usuario ya está registrado.' },
+            },
         });
 
         render(
@@ -93,16 +79,26 @@ describe('HU-01: Registro de Usuarios', () => {
         fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'password123' } });
-
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-          expect(screen.getByText('El usuario ya existe.')).toBeDefined();
+            expect(screen.getByText('El nombre de usuario ya está registrado.')).toBeInTheDocument();
         });
     });
 
-    it('Se muestra un mensaje de error si la contrasena es menor de 8 caracteres.', async () => {
-         render(
+    it('Navega a la página principal después del registro exitoso', async () => {
+        const navigate = vi.fn();
+        vi.mock('react-router-dom', async () => {
+            const actual = await vi.importActual('react-router-dom');
+            return {
+                ...actual,
+                useNavigate: () => navigate,
+            };
+        });
+
+        api.post.mockResolvedValue({ data: { access: 'access_token', refresh: 'refresh_token' } });
+
+        render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
             </BrowserRouter>
@@ -115,12 +111,11 @@ describe('HU-01: Registro de Usuarios', () => {
 
         fireEvent.change(usernameInput, { target: { value: 'testuser' } });
         fireEvent.change(emailInput, { target: { value: 'test@example.com' } });
-        fireEvent.change(passwordInput, { target: { value: '1234567' } });
-
+        fireEvent.change(passwordInput, { target: { value: 'password123' } });
         fireEvent.click(registerButton);
 
         await waitFor(() => {
-          expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeDefined();
+            expect(navigate).toHaveBeenCalledWith('/');
         });
     });
 });

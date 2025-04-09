@@ -7,46 +7,55 @@ import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');
 
-describe('HU-07: Marcado de Tareas Completadas', () => {
-    it('Debería cambiar el estado de una tarea a "completada" y reflejarse en la lista de tareas', async () => {
-        // Mock de la respuesta de la API al obtener las tareas
-        api.get.mockResolvedValue({
-            data: [
-                { id: 1, titulo: 'Tarea 1', descripcion: 'Descripcion 1', estado: 'pendiente', prioridad: 'media', fecha_vencimiento: '2024-12-31' },
-                { id: 2, titulo: 'Tarea 2', descripcion: 'Descripcion 2', estado: 'en_progreso', prioridad: 'alta', fecha_vencimiento: '2024-12-30' },
-                { id: 3, titulo: 'Tarea 3', descripcion: 'Descripcion 3', estado: 'completada', prioridad: 'baja', fecha_vencimiento: '2024-12-29' },
-            ],
-        });
+describe('HU-07: Marcar Tareas Completadas', () => {
+  it('Debe cambiar el estado de la tarea a "completada" y reflejarse en la lista de tareas', async () => {
+    const mockTareas = [
+      { id: 1, titulo: 'Tarea 1', estado: 'pendiente', prioridad: 'media', fecha_vencimiento: '2024-12-31' },
+      { id: 2, titulo: 'Tarea 2', estado: 'en_progreso', prioridad: 'alta', fecha_vencimiento: '2024-12-25' },
+    ];
 
-        // Mock de la respuesta de la API al actualizar el estado de una tarea
-        api.put.mockImplementation((url, data) => {
-            const id = parseInt(url.match(/update\/(\d+)\//)[1]);
-            return Promise.resolve({ status: 200, data: { id, ...data } });
-        });
+    api.get.mockResolvedValue({ data: mockTareas });
+    api.put.mockImplementation((url, data) => Promise.resolve({ status: 200 }));
 
-        render(
-            <BrowserRouter>
-                <Home />
-            </BrowserRouter>
-        );
+    render(
+      <BrowserRouter>
+        <Home />
+      </BrowserRouter>
+    );
 
-        // Esperar a que las tareas se carguen
-        await waitFor(() => expect(api.get).toHaveBeenCalledTimes(1));
+    await waitFor(() => expect(api.get).toHaveBeenCalled());
 
-        // Simular el drag and drop de la tarea 1 a la columna de completadas
-        const tarea1 = screen.getByText('Tarea 1');
-        const columnaCompletadas = screen.getByText('Completadas').closest('div'); //Encontrar el div contenedor de la columna completadas
+    const tareaPendiente = screen.getByText('Tarea 1');
+    expect(tareaPendiente).toBeInTheDocument();
 
-        fireEvent.dragStart(tarea1);
-        fireEvent.dragOver(columnaCompletadas);
-        fireEvent.drop(columnaCompletadas);
+    const tareaEnProgreso = screen.getByText('Tarea 2');
+    expect(tareaEnProgreso).toBeInTheDocument();
 
-        // Verificar que la API put fue llamada para actualizar el estado de la tarea
-        await waitFor(() => {
-            expect(api.put).toHaveBeenCalledWith(
-                '/api/tareas/update/1/',
-                expect.objectContaining({ estado: 'completada' })
-            );
-        });
+    const columnaCompletadas = screen.getByText('Completadas').closest('div');
+
+    const tareaIdToUpdate = 1;
+    const handleDragStart = (e, id) => {
+      e.dataTransfer.setData("tareaId", id);
+    };
+
+    const dragStartEvent = new DragEvent('dragstart', { dataTransfer: new DataTransfer() });
+    handleDragStart(dragStartEvent, tareaIdToUpdate);
+
+    const dropEvent = new DragEvent('drop', {
+      bubbles: true,
+      cancelable: true,
+      dataTransfer: new DataTransfer(),
     });
+
+    dragStartEvent.dataTransfer.setData("tareaId", tareaIdToUpdate);
+
+    fireEvent(columnaCompletadas, dropEvent);
+
+    await waitFor(() => {
+      expect(api.put).toHaveBeenCalledWith(`/api/tareas/update/${tareaIdToUpdate}/`, {
+        ...mockTareas[0],
+        estado: 'completada',
+      });
+    });
+  });
 });

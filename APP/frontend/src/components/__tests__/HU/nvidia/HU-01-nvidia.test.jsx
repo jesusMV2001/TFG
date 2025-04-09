@@ -1,3 +1,5 @@
+// /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-01-nvidia.test.jsx
+
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import UsuarioForm from '../../../UsuarioForm';
@@ -13,65 +15,75 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-describe('HU-01: Registro de Usuarios', () => {
-    afterEach(() => {
-        vi.clearAllMocks();
-    });
-
-    it('renders form with fields', () => {
+describe('HU-01 - Registro de Usuarios', () => {
+    it('Los campos de nombre, correo y contraseña están presentes', () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
             </BrowserRouter>
         );
+
         expect(screen.getByPlaceholderText('Username')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Email')).toBeInTheDocument();
         expect(screen.getByPlaceholderText('Password')).toBeInTheDocument();
     });
 
-    it('shows error if fields are empty', async () => {
+    it('No permite registrar con campos vacíos', async () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
             </BrowserRouter>
         );
-        const submitButton = screen.getByText('Register');
-        fireEvent.click(submitButton);
-        await waitFor(() => expect(screen.getByText('Todos los campos son obligatorios.')).toBeInTheDocument());
+
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+
+        await waitFor(() => fireEvent.click(submitButton));
+
+        expect(await screen.findByText('Todos los campos son obligatorios.')).toBeInTheDocument();
     });
 
-    it('shows error if password is less than 8 characters', async () => {
+    it('La contraseña debe tener un mínimo de 8 caracteres', async () => {
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
             </BrowserRouter>
         );
+
         const passwordInput = screen.getByPlaceholderText('Password');
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+
         fireEvent.change(passwordInput, { target: { value: 'short' } });
-        const submitButton = screen.getByText('Register');
-        fireEvent.click(submitButton);
-        await waitFor(() => expect(screen.getByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument());
+        await waitFor(() => fireEvent.click(submitButton));
+
+        expect(await screen.findByText('La contraseña debe tener al menos 8 caracteres.')).toBeInTheDocument();
     });
 
-    it('shows error if email or username is already registered', async () => {
-        api.post.mockRejectedValueOnce({
+    it('Muestra un mensaje de error si el correo o nombre ya está registrado', async () => {
+        vi.mocked(api.post).mockRejectedValueOnce({
             response: {
-                data: { error: 'El correo electrónico ya está registrado.' },
+                data: {
+                    detail: 'El nombre de usuario ya está registrado.',
+                },
             },
         });
+
         render(
             <BrowserRouter>
                 <UsuarioForm route="/api/user/register/" method="register" />
             </BrowserRouter>
         );
+
         const usernameInput = screen.getByPlaceholderText('Username');
-        fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
         const emailInput = screen.getByPlaceholderText('Email');
-        fireEvent.change(emailInput, { target: { value: 'existing@email.com' } });
         const passwordInput = screen.getByPlaceholderText('Password');
+        const submitButton = screen.getByRole('button', { name: 'Register' });
+
+        fireEvent.change(usernameInput, { target: { value: 'existinguser' } });
+        fireEvent.change(emailInput, { target: { value: 'existing@example.com' } });
         fireEvent.change(passwordInput, { target: { value: 'longenoughpassword' } });
-        const submitButton = screen.getByText('Register');
-        fireEvent.click(submitButton);
-        await waitFor(() => expect(screen.getByText('El correo electrónico ya está registrado.')).toBeInTheDocument());
+
+        await waitFor(() => fireEvent.click(submitButton));
+
+        expect(await screen.findByText('El nombre de usuario ya está registrado.')).toBeInTheDocument();
     });
 });

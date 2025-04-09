@@ -1,75 +1,76 @@
-# /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-10-gemini.test.jsx
-import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor } from '@testing-library/react';
-import Tarea from '../../../Tarea';
-import api from '../../../../api';
+# /home/jesus/python/TFG/APP/backend/api/tests/HU/gemini/HU-10-gemini.py
+from django.contrib.auth.models import User
+from rest_framework import status
+from rest_framework.test import APITestCase
+from api.models import Tarea, HistorialCambios
+from rest_framework_simplejwt.tokens import RefreshToken
+from django.urls import reverse
 
-vi.mock('../../../../api');
+class HistorialCambiosTests(APITestCase):
+    def setUp(self):
+        # Crear un usuario de prueba
+        self.user = User.objects.create_user(username='testuser', password='testpassword')
+        self.user2 = User.objects.create_user(username='testuser2', password='testpassword')
 
-describe('HU-10: Historial de Actividades', () => {
-  const mockTarea = {
-    id: 1,
-    titulo: 'Tarea de prueba',
-    descripcion: 'Descripción de prueba',
-    estado: 'pendiente',
-    prioridad: 'media',
-    fecha_vencimiento: '2024-12-31',
-    fecha_creacion: '2024-01-01',
-    etiquetas: [],
-  };
+        # Obtener token JWT para el usuario
+        refresh = RefreshToken.for_user(self.user)
+        self.access_token = str(refresh.access_token)
 
-  const mockHistorial = [
-    {
-      id: 1,
-      tarea: 'Tarea de prueba',
-      accion: 'Creación de la tarea',
-      fecha_cambio: '2024-01-01',
-      usuario: 'usuario_prueba',
-    },
-    {
-      id: 2,
-      tarea: 'Tarea de prueba',
-      accion: 'Cambio de estado a En Progreso',
-      fecha_cambio: '2024-01-02',
-      usuario: 'usuario_prueba',
-    },
-  ];
+        self.client.credentials(HTTP_AUTHORIZATION=f'Bearer {self.access_token}')
 
-  it('Debería mostrar el historial de cambios al hacer clic en el botón de detalles', async () => {
-    api.get.mockResolvedValue({ data: mockHistorial });
+        # Crear una tarea de prueba asociada al usuario
+        self.tarea = Tarea.objects.create(
+            titulo='Tarea de prueba',
+            descripcion='Descripción de la tarea',
+            usuario=self.user
+        )
+        self.tarea2 = Tarea.objects.create(
+            titulo='Tarea de prueba2',
+            descripcion='Descripción de la tarea',
+            usuario=self.user2
+        )
 
-    render(<Tarea tarea={mockTarea} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} />);
+        # Crear historial de cambios de prueba para la tarea
+        self.historial1 = HistorialCambios.objects.create(
+            tarea=self.tarea,
+            accion='Tarea creada',
+            usuario=self.user
+        )
+        self.historial2 = HistorialCambios.objects.create(
+            tarea=self.tarea,
+            accion='Tarea actualizada',
+            usuario=self.user
+        )
 
-    const detallesButton = screen.getByText('Ver');
-    detallesButton.click();
+    def test_obtener_historial_cambios(self):
+        """
+        Asegura que se puede obtener el historial de cambios de una tarea específica.
+        """
+        url = reverse('historial-cambios', kwargs={'tarea_id': self.tarea.id})
+        response = self.client.get(url)
 
-    await waitFor(() => {
-      expect(api.get).toHaveBeenCalledWith(`/api/tareas/${mockTarea.id}/historial/`);
-    });
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 2)  # Verifica que se retornen dos elementos del historial
+        self.assertEqual(response.data[0]['accion'], 'Tarea actualizada')  # Verifica el contenido del primer elemento
+        self.assertEqual(response.data[1]['accion'], 'Tarea creada')
+    
+    def test_obtener_historial_cambios_tarea_otro_usuario(self):
+        """
+        Asegura que no se puede obtener el historial de cambios de una tarea específica de otro usuario.
+        """
+        url = reverse('historial-cambios', kwargs={'tarea_id': self.tarea2.id})
+        response = self.client.get(url)
 
-    await waitFor(() => {
-        expect(screen.getByText('Historial de Cambios')).toBeVisible();
-    });
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(len(response.data), 0)  # Verifica que no se retornen elementos del historial
 
-    expect(screen.getByText('Creación de la tarea')).toBeVisible();
-    expect(screen.getByText('Cambio de estado a En Progreso')).toBeVisible();
-  });
+    def test_historial_cambios_ordenado_por_fecha(self):
+        """
+        Asegura que el historial de cambios se devuelve ordenado por fecha de cambio descendente.
+        """
+        url = reverse('historial-cambios', kwargs={'tarea_id': self.tarea.id})
+        response = self.client.get(url)
 
-  it('Debería mostrar un mensaje si no hay historial de cambios', async () => {
-    api.get.mockResolvedValue({ data: [] });
-
-    render(<Tarea tarea={mockTarea} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} />);
-
-    const detallesButton = screen.getByText('Ver');
-    detallesButton.click();
-
-    await waitFor(() => {
-      expect(api.get).toHaveBeenCalledWith(`/api/tareas/${mockTarea.id}/historial/`);
-    });
-
-     await waitFor(() => {
-        expect(screen.getByText('Historial de Cambios')).toBeVisible();
-    });
-    expect(screen.getByText('No hay historial de cambios.')).toBeVisible();
-  });
-});
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data[0]['accion'], 'Tarea actualizada')
+        self.assertEqual(response.data[1]['accion'], 'Tarea creada')
