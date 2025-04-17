@@ -37,7 +37,7 @@ function TareaForm({ onAddTarea, initialData = {}, showToast }) {
 
     useEffect(() => {
         if (initialData.id) {
-            api.get(`/api/etiquetas/?tarea_id=${initialData.id}`)
+            api.get(`/api/tareas/${initialData.id}/etiquetas/`)
                 .then((response) => {
                     setTodasEtiquetas(response.data);
                 })

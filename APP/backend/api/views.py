@@ -119,16 +119,20 @@ class HistorialCambiosList(generics.ListAPIView):
         tarea_id = self.kwargs['tarea_id']
         return HistorialCambios.objects.filter(tarea_id=tarea_id).order_by('-fecha_cambio')
     
-class EtiquetaListCreate(generics.ListCreateAPIView):
+class EtiquetaList(generics.ListAPIView):
     serializer_class = EtiquetaSerializer
     permission_classes = [IsAuthenticated]
-
+    
     def get_queryset(self):
         # Devuelve las etiquetas asociadas a una tarea específica
-        tarea_id = self.request.query_params.get('tarea_id')
+        tarea_id = self.kwargs['tarea_id']
         if tarea_id:
             return Etiqueta.objects.filter(tarea_id=tarea_id)
-        return Etiqueta.objects.none()
+        return Etiqueta.objects.none()    
+
+class EtiquetaCreate(generics.CreateAPIView):
+    serializer_class = EtiquetaSerializer
+    permission_classes = [IsAuthenticated]
 
     def perform_create(self, serializer):
         # Asocia la etiqueta a una tarea específica

@@ -39,6 +39,7 @@ REST_FRAMEWORK = {
     "DEFAULT_PERMISSION_CLASSES": [
         "rest_framework.permissions.IsAuthenticated",
     ],
+    'DEFAULT_SCHEMA_CLASS': 'drf_spectacular.openapi.AutoSchema',
 }
 
 SIMPLE_JWT = {
@@ -58,7 +59,20 @@ INSTALLED_APPS = [
     "api",
     "rest_framework",
     "corsheaders",
+    "drf_spectacular",
 ]
+
+SPECTACULAR_SETTINGS = {
+    'TITLE': 'API',
+    'DESCRIPTION': 'Documentación generada automáticamente con drf-spectacular.',
+    'VERSION': '1.0.0',
+    'SERVE_INCLUDE_SCHEMA': True,
+    'SWAGGER_UI_SETTINGS': {
+        'docExpansion': 'none',
+        'defaultModelsExpandDepth': -1,
+    },
+    'COMPONENT_SPLIT_REQUEST': True,
+}
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
