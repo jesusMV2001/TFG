@@ -5,60 +5,58 @@ from openai import OpenAI
 from mistralai import Mistral
 from dotenv import load_dotenv
 import generate_test
+from logger import logger
 
 load_dotenv()
 
 def read_files(file_paths):
     contents = []
     for path in file_paths:
-        with open(path, 'r') as file:
-            contents.append(f"Contenido de {path}:\n{file.read()}")
+        try:
+            with open(path, 'r') as file:
+                contents.append(f"Contenido de {path}:\n{file.read()}")
+        except Exception as e:
+            logger.error(f"No se pudo leer el archivo {path}: {e}")
     return "\n\n".join(contents) 
 
 def call_llm(llm, prompt):
-    if llm == "gemini":
-        api_key = os.environ.get("GEMINI_API_KEY")
-        client = genai.Client(api_key=api_key)
-        response = client.models.generate_content(
-            model="gemini-2.0-flash", contents=prompt
-        )
-        return response.text
-    elif llm == "nvidia":
-        
-        client = OpenAI(
-        base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = os.environ.get("NVIDIA_API_KEY")
-        )
-
-
-        completion = client.chat.completions.create(
-            model="nvidia/llama-3.1-nemotron-70b-instruct",
-            messages=[
-                {
-                    "role": "user",
-                    "content": prompt,
-                }
-            ]
-        )
-        return completion.choices[0].message.content
-    elif llm == "mistral":
-        api_key = os.environ.get("MISTRAL_API_KEY")
-        model = "mistral-large-latest"
-
-        client = Mistral(api_key=api_key)
-
-        chat_response = client.chat.complete(
-            model= model,
-            messages = [
-                {
-                    "role": "user",
-                    "content": prompt,
-                },
-            ]
-        )
-        return chat_response.choices[0].message.content
-        
-    raise ValueError(f"LLM no soportado: {llm}")
+    logger.info(f"Llamando al LLM {llm} con el prompt.")
+    try:
+        if llm == "gemini":
+            api_key = os.environ.get("GEMINI_API_KEY")
+            client = genai.Client(api_key=api_key)
+            response = client.models.generate_content(
+                model="gemini-2.0-flash", contents=prompt
+            )
+            logger.debug("Respuesta recibida de gemini.")
+            return response.text
+        elif llm == "nvidia":
+            client = OpenAI(
+                base_url="https://integrate.api.nvidia.com/v1",
+                api_key=os.environ.get("NVIDIA_API_KEY")
+            )
+            completion = client.chat.completions.create(
+                model="nvidia/llama-3.1-nemotron-70b-instruct",
+                messages=[{"role": "user", "content": prompt}]
+            )
+            logger.debug("Respuesta recibida de nvidia.")
+            return completion.choices[0].message.content
+        elif llm == "mistral":
+            api_key = os.environ.get("MISTRAL_API_KEY")
+            model = "mistral-large-latest"
+            client = Mistral(api_key=api_key)
+            chat_response = client.chat.complete(
+                model=model,
+                messages=[{"role": "user", "content": prompt}]
+            )
+            logger.debug("Respuesta recibida de mistral.")
+            return chat_response.choices[0].message.content
+            
+        logger.error(f"LLM no soportado: {llm}")
+        raise ValueError(f"LLM no soportado: {llm}")
+    except Exception as e:
+        logger.error(f"Error durante la llamada al LLM {llm}: {e}", exc_info=True)
+        raise
         
 def get_relevant_files(prompt_type):
     """
@@ -89,11 +87,14 @@ def get_relevant_files(prompt_type):
     ]
 
     if "frontend" in prompt_type:
+        logger.info("Usando archivos frontend.")
         return frontend_files
     elif "backend" in prompt_type:
+        logger.info("Usando archivos backend.")
         return backend_files
-        
+    logger.info("Usando archivos frontend y backend.")
     return frontend_files + backend_files
+
 
 def create_final_prompt(prompt, files_content, tipo_requisito, requisito, llm, ruta_backend_test, ruta_frontend_test, prompt_type):
     """
@@ -111,7 +112,7 @@ def create_final_prompt(prompt, files_content, tipo_requisito, requisito, llm, r
         ruta_backend = f"{ruta_backend_test}{tipo_requisito}/{llm}/{requisito['id']}-{llm}"
         ruta += f"para el frontend es: {ruta_frontend}.test.jsx y para el backend es: {ruta_backend}.py"
         
-    return f"""
+    final_prompt = f"""
     Dado el siguiente contenido de archivos:
     {files_content}
     
@@ -122,6 +123,8 @@ def create_final_prompt(prompt, files_content, tipo_requisito, requisito, llm, r
     No necesito que expliques nada, solo necesito los tests.
     {ruta}
     """
+    logger.debug("Prompt final creado.")
+    return final_prompt
 
 def make_tests(llm_list, prompt_list, tipo_requisitos_list, ruta_general, ruta_frontend_test, ruta_backend_test):
     for llm in llm_list:
@@ -144,7 +147,7 @@ def make_tests(llm_list, prompt_list, tipo_requisitos_list, ruta_general, ruta_f
                     final_prompt = create_final_prompt(prompt_content, files_content, tipo_requisito, requisito, llm, ruta_backend_test, ruta_frontend_test, prompt)
                     
                     # Llamar a la función para generar los tests
-                    # print(f"Generando tests para {requisito['id']} usando {llm} y {prompt}")
+                    logger.info(f"Generando tests para {requisito['id']} usando {llm} y {prompt}.")
                     respuesta = call_llm(llm, final_prompt)
                     
                     generate_test.extract_and_save_tests(respuesta, tipo_requisito, requisito['id'], llm, ruta_frontend_test, ruta_backend_test)

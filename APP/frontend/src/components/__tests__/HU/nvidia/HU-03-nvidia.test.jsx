@@ -14,7 +14,7 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-describe('HU-03: Crear tarea', () => {
+describe('HU-03 - Crear tarea', () => {
     beforeEach(() => {
         render(
             <BrowserRouter>
@@ -23,50 +23,46 @@ describe('HU-03: Crear tarea', () => {
         );
     });
 
-    it('El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial.', async () => {
-        const tituloInput = screen.getByPlaceholderText('Título');
-        const descripcionInput = screen.getByPlaceholderText('Descripción');
-        const fechaVencimientoInput = screen.getByPlaceholderText('Fecha de Vencimiento');
-        const prioridadSelect = screen.getByRole('combobox', { name: 'Prioridad' });
-        const estadoSelect = screen.getByRole('combobox', { name: 'Estado' });
-        const submitButton = screen.getByRole('button', { name: 'Guardar Cambios' });
+    it('renders form with required fields', () => {
+        expect(screen.getByLabelText('Título')).toBeInTheDocument();
+        expect(screen.getByLabelText('Descripción')).toBeInTheDocument();
+        expect(screen.getByLabelText('Fecha de Vencimiento')).toBeInTheDocument();
+        expect(screen.getByLabelText('Prioridad')).toBeInTheDocument();
+        expect(screen.getByLabelText('Estado')).toBeInTheDocument();
+    });
 
-        fireEvent.change(tituloInput, { target: { value: 'Nueva Tarea' } });
-        fireEvent.change(descripcionInput, { target: { value: 'Descripción de la tarea' } });
-        fireEvent.change(fechaVencimientoInput, { target: { value: '2030-01-01' } });
-        fireEvent.change(prioridadSelect, { target: { value: 'alta' } });
-        fireEvent.change(estadoSelect, { target: { value: 'pendiente' } });
-
-        fireEvent.click(submitButton);
-
+    it('requires title, date, and priority', async () => {
+        const submitButton = screen.getByText('Guardar Cambios');
+        await fireEvent.click(submitButton);
         await waitFor(() => {
-            expect(api.post).toHaveBeenCalledTimes(1);
-            expect(api.post).toHaveBeenCalledWith('/api/tareas/', expect.any(Object));
+            expect(screen.getByText('El título no puede estar vacío.')).toBeInTheDocument();
+            expect(screen.getByText('La fecha de vencimiento no puede estar vacía.')).toBeInTheDocument();
+            expect(screen.getByText('La prioridad no puede estar vacía.')).toBeInTheDocument();
         });
     });
 
-    it('El titulo, fecha de vencimiento y prioridad no pueden estar vacios.', async () => {
-        const submitButton = screen.getByRole('button', { name: 'Guardar Cambios' });
-
-        fireEvent.click(submitButton);
-
+    it('prevents creating task with past due date', async () => {
+        const dueDateInput = screen.getByLabelText('Fecha de Vencimiento');
+        await fireEvent.change(dueDateInput, { target: { value: '2022-01-01' } });
+        const submitButton = screen.getByText('Guardar Cambios');
+        await fireEvent.click(submitButton);
         await waitFor(() => {
-            expect(screen.queryByText('El título es obligatorio.')).toBeInTheDocument();
-            expect(screen.queryByText('La fecha de vencimiento es obligatoria.')).toBeInTheDocument();
-            expect(screen.queryByText('La prioridad es obligatoria.')).toBeInTheDocument();
+            expect(screen.getByText('La fecha de vencimiento no puede ser menor a la fecha actual.')).toBeInTheDocument();
         });
     });
 
-    it('La fecha de vencimiento no debe ser anterior a la fecha actual.', async () => {
-        const fechaVencimientoInput = screen.getByPlaceholderText('Fecha de Vencimiento');
-        const submitButton = screen.getByRole('button', { name: 'Guardar Cambios' });
-
-        fireEvent.change(fechaVencimientoInput, { target: { value: '2020-01-01' } });
-
-        fireEvent.click(submitButton);
-
+    it('successfully creates task with valid data', async () => {
+        api.post.mockResolvedValue({ status: 201, data: { id: 1, titulo: 'Nueva Tarea' } });
+        const titleInput = screen.getByLabelText('Título');
+        await fireEvent.change(titleInput, { target: { value: 'Nueva Tarea' } });
+        const dueDateInput = screen.getByLabelText('Fecha de Vencimiento');
+        await fireEvent.change(dueDateInput, { target: { value: '2024-03-16' } });
+        const prioritySelect = screen.getByLabelText('Prioridad');
+        await fireEvent.change(prioritySelect, { target: { value: 'alta' } });
+        const submitButton = screen.getByText('Guardar Cambios');
+        await fireEvent.click(submitButton);
         await waitFor(() => {
-            expect(screen.queryByText('La fecha de vencimiento no puede ser anterior a la fecha actual.')).toBeInTheDocument();
+            expect(screen.queryByText('Error:')).not.toBeInTheDocument();
         });
     });
 });

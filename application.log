@@ -1,0 +1,33 @@
+2025-04-21 17:28:00,103 - TFG - INFO - Iniciando la generación de tests de TFG.
+2025-04-21 17:28:00,104 - TFG - INFO - Usando archivos frontend y backend.
+2025-04-21 17:28:00,104 - TFG - DEBUG - Prompt final creado.
+2025-04-21 17:28:00,104 - TFG - INFO - Generando tests para HU-01 usando nvidia y prompt_todo.txt.
+2025-04-21 17:28:00,104 - TFG - INFO - Llamando al LLM nvidia con el prompt.
+2025-04-21 17:28:38,874 - TFG - DEBUG - Respuesta recibida de nvidia.
+2025-04-21 17:28:38,874 - TFG - INFO - Extrayendo tests para el requisito HU-01.
+2025-04-21 17:28:38,875 - TFG - INFO - Test frontend generado: /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-01-nvidia.test.jsx
+2025-04-21 17:28:38,875 - TFG - INFO - Test jsx generado para HU-01.
+2025-04-21 17:28:38,875 - TFG - INFO - Test backend generado: /home/jesus/python/TFG/APP/backend/api/tests/HU/nvidia/HU-01-nvidia.py
+2025-04-21 17:28:38,875 - TFG - INFO - Test python generado para HU-01.
+2025-04-21 17:28:38,875 - TFG - DEBUG - Prompt final creado.
+2025-04-21 17:28:38,875 - TFG - INFO - Generando tests para HU-02 usando nvidia y prompt_todo.txt.
+2025-04-21 17:28:38,875 - TFG - INFO - Llamando al LLM nvidia con el prompt.
+2025-04-21 17:29:08,214 - TFG - DEBUG - Respuesta recibida de nvidia.
+2025-04-21 17:29:08,214 - TFG - INFO - Extrayendo tests para el requisito HU-02.
+2025-04-21 17:29:08,214 - TFG - INFO - Test frontend generado: /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-02-nvidia.test.jsx
+2025-04-21 17:29:08,215 - TFG - INFO - Test jsx generado para HU-02.
+2025-04-21 17:29:08,215 - TFG - INFO - Test backend generado: /home/jesus/python/TFG/APP/backend/api/tests/HU/nvidia/HU-02-nvidia.py
+2025-04-21 17:29:08,215 - TFG - INFO - Test python generado para HU-02.
+2025-04-21 17:29:08,215 - TFG - DEBUG - Prompt final creado.
+2025-04-21 17:29:08,215 - TFG - INFO - Generando tests para HU-03 usando nvidia y prompt_todo.txt.
+2025-04-21 17:29:08,215 - TFG - INFO - Llamando al LLM nvidia con el prompt.
+2025-04-21 17:29:30,308 - TFG - DEBUG - Respuesta recibida de nvidia.
+2025-04-21 17:29:30,308 - TFG - INFO - Extrayendo tests para el requisito HU-03.
+2025-04-21 17:29:30,308 - TFG - INFO - Test frontend generado: /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-03-nvidia.test.jsx
+2025-04-21 17:29:30,308 - TFG - INFO - Test jsx generado para HU-03.
+2025-04-21 17:29:30,309 - TFG - INFO - Test backend generado: /home/jesus/python/TFG/APP/backend/api/tests/HU/nvidia/HU-03-nvidia.py
+2025-04-21 17:29:30,309 - TFG - INFO - Test python generado para HU-03.
+2025-04-21 17:29:30,309 - TFG - DEBUG - Prompt final creado.
+2025-04-21 17:29:30,309 - TFG - INFO - Generando tests para HU-04 usando nvidia y prompt_todo.txt.
+2025-04-21 17:29:30,309 - TFG - INFO - Llamando al LLM nvidia con el prompt.
+2025-04-21 17:29:49,461 - TFG - WARNING - Ejecución interrumpida manualmente (KeyboardInterrupt).

@@ -5,7 +5,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import UsuarioForm from '../../../UsuarioForm';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
-import { Routes, Route } from 'react-router-dom';
+import ProtectedRoute from '../../../ProtectedRoute';
 
 vi.mock('../../../../api');
 vi.mock('react-router-dom', async () => {
@@ -17,108 +17,100 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-02: Inicio de Sesión y Autenticación', () => {
-    beforeEach(() => {
-        // Mockear respuestas de la API
-        api.post.mockReset();
-    });
-
-    it('debe iniciar sesión con credenciales válidas', async () => {
-        // Configurar el mock para retornar un token de acceso válido
-        api.post.mockResolvedValue({
+    it('debe permitir el inicio de sesión con credenciales válidas', async () => {
+        // Mockear API para simular inicio de sesión exitoso
+        vi.mocked(api.post).mockResolvedValue({
             data: {
-                access: 'token_de_acceso_válido',
-                refresh: 'refresh_token_válido',
+                access: 'token-de-prueba',
+                refresh: 'refresh-token-de-prueba',
             },
         });
 
         render(
             <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<UsuarioForm route="/api/token/" method="login" />} />
-                </Routes>
+                <UsuarioForm route="login" method="login" />
             </BrowserRouter>
         );
 
-        // Rellenar el formulario con credenciales válidas
         const usernameInput = screen.getByPlaceholderText('Username');
         const passwordInput = screen.getByPlaceholderText('Password');
-        fireEvent.change(usernameInput, { target: { value: 'usuario_valido' } });
-        fireEvent.change(passwordInput, { target: { value: 'contraseña_válida' } });
+        const submitButton = screen.getByRole('button', { name: 'Login' });
 
-        //.Submit el formulario
-        const submitButton = screen.getByText('Login');
+        fireEvent.change(usernameInput, { target: { value: 'usuario_de_prueba' } });
+        fireEvent.change(passwordInput, { target: { value: 'contraseña_de_prueba' } });
         fireEvent.click(submitButton);
 
-        // Esperar a que la API responda y el token sea guardado en localStorage
-        await waitFor(() => expect(localStorage.getItem('access_token')).toBe('token_de_acceso_válido'));
+        await waitFor(() => expect(vi.mocked(api.post)).toHaveBeenCalledTimes(1));
+        expect(vi.mocked(api.post)).toHaveBeenCalledWith('http://localhost:8000/api/token/', {
+            username: 'usuario_de_prueba',
+            password: 'contraseña_de_prueba',
+        });
+
+        // Verificar redirección a página protegida
+        expect(screen.queryByText('Lista de Tareas')).toBeInTheDocument();
     });
 
     it('debe mostrar un mensaje de error con credenciales incorrectas', async () => {
-        // Configurar el mock para retornar un error de credenciales incorrectas
-        api.post.mockRejectedValue({
+        // Mockear API para simular inicio de sesión fallido
+        vi.mocked(api.post).mockRejectedValue({
             response: {
-                data: {
-                    detail: 'Credenciales incorrectas',
-                },
+                data: { error: 'Credenciales inválidas' },
+                status: 401,
             },
         });
 
         render(
             <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<UsuarioForm route="/api/token/" method="login" />} />
-                </Routes>
+                <UsuarioForm route="login" method="login" />
             </BrowserRouter>
         );
 
-        // Rellenar el formulario con credenciales incorrectas
         const usernameInput = screen.getByPlaceholderText('Username');
         const passwordInput = screen.getByPlaceholderText('Password');
-        fireEvent.change(usernameInput, { target: { value: 'usuario_invalido' } });
-        fireEvent.change(passwordInput, { target: { value: 'contraseña_inválida' } });
+        const submitButton = screen.getByRole('button', { name: 'Login' });
 
-        // Submit el formulario
-        const submitButton = screen.getByText('Login');
+        fireEvent.change(usernameInput, { target: { value: 'usuario_invalido' } });
+        fireEvent.change(passwordInput, { target: { value: 'contraseña_invalida' } });
         fireEvent.click(submitButton);
 
-        // Esperar a que el mensaje de error sea visible
-        await screen.findByText('Credenciales incorrectas');
+        await waitFor(() => expect(vi.mocked(api.post)).toHaveBeenCalledTimes(1));
+        expect(screen.getByText('Credenciales inválidas')).toBeInTheDocument();
     });
 
-    it('debe mantener la sesión activa después de la autenticación', async () => {
-        // Este test implica verificar el comportamiento de la aplicación después de la autenticación exitosa
-        // Para mantenerlo sencillo, solo verificaremos si el token de acceso está presente en localStorage
-        // Después de una autenticación exitosa, y si se redirige a la ruta protegida '/'
-
-        // Configurar el mock para retornar un token de acceso válido
-        api.post.mockResolvedValue({
+    it('debe mantener la sesión activa después del inicio de sesión', async () => {
+        // Mockear API para simular inicio de sesión exitoso
+        vi.mocked(api.post).mockResolvedValue({
             data: {
-                access: 'token_de_acceso_válido',
-                refresh: 'refresh_token_válido',
+                access: 'token-de-prueba',
+                refresh: 'refresh-token-de-prueba',
             },
         });
 
+        // Iniciar sesión
         render(
             <BrowserRouter>
-                <Routes>
-                    <Route path="/login" element={<UsuarioForm route="/api/token/" method="login" />} />
-                    <Route path="/" element={<div>Panel de Tareas</div>} />
-                </Routes>
+                <UsuarioForm route="login" method="login" />
             </BrowserRouter>
         );
 
-        // Rellenar el formulario con credenciales válidas
         const usernameInput = screen.getByPlaceholderText('Username');
         const passwordInput = screen.getByPlaceholderText('Password');
-        fireEvent.change(usernameInput, { target: { value: 'usuario_valido' } });
-        fireEvent.change(passwordInput, { target: { value: 'contraseña_válida' } });
+        const submitButton = screen.getByRole('button', { name: 'Login' });
 
-        // Submit el formulario
-        const submitButton = screen.getByText('Login');
+        fireEvent.change(usernameInput, { target: { value: 'usuario_de_prueba' } });
+        fireEvent.change(passwordInput, { target: { value: 'contraseña_de_prueba' } });
         fireEvent.click(submitButton);
 
-        // Esperar a que la API responda, el token sea guardado en localStorage y se redirija a '/'
-        await waitFor(() => expect(localStorage.getItem('access_token')).toBe('token_de_acceso_válido'));
-        await screen.findByText('Panel de Tareas');
+        await waitFor(() => expect(vi.mocked(api.post)).toHaveBeenCalledTimes(1));
+
+        // Verificar que la ruta protegida se muestra después de iniciar sesión
+        const protectedRoute = render(
+            <BrowserRouter>
+                <ProtectedRoute>
+                    <div>Contenido protegido</div>
+                </ProtectedRoute>
+            </BrowserRouter>
+        );
+        expect(protectedRoute.getByText('Contenido protegido')).toBeInTheDocument();
     });
 });
