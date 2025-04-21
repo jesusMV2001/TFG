@@ -27,7 +27,7 @@ def call_llm(llm, prompt):
         
         client = OpenAI(
         base_url = "https://integrate.api.nvidia.com/v1",
-        api_key = "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"
+        api_key = os.environ.get("NVIDIA_API_KEY")
         )
 
 
