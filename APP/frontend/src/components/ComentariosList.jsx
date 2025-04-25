@@ -6,10 +6,9 @@ import api from '../api';
  * 
  * @param {Object} props - Propiedades del componente
  * @param {number} props.tareaId - ID de la tarea
- * @param {Function} props.onClose - Función para cerrar el modal de comentarios
  * @returns {JSX.Element}
  */
-function ComentariosList({ tareaId, onClose }) {
+function ComentariosList({ tareaId }) {
     const [comentarios, setComentarios] = useState([]);
     const [nuevoComentario, setNuevoComentario] = useState('');
     const [error, setError] = useState('');
