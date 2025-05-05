@@ -7,70 +7,61 @@ import api from '../../../../api';
 vi.mock('../../../../api');
 
 describe('HU-03: Crear tarea', () => {
-    it('El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial', async () => {
-        api.post.mockResolvedValue({ status: 201 });
-
+    it('El usuario puede crear una tarea ingresando titulo, descripcion, fecha de vencimiento, prioridad y estado inicial.', async () => {
         const onAddTarea = vi.fn();
-        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
+        render(<TareaForm onAddTarea={onAddTarea} />);
 
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
-        fireEvent.change(screen.getByLabelText('Descripción'), { target: { value: 'Descripción de prueba' } });
-        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2024-12-31' } });
-        fireEvent.change(screen.getByLabelText('Prioridad'), { target: { value: 'alta' } });
-        fireEvent.change(screen.getByLabelText('Estado'), { target: { value: 'pendiente' } });
+        fireEvent.change(screen.getByLabelText(/Título/i), { target: { value: 'Nueva tarea' } });
+        fireEvent.change(screen.getByLabelText(/Descripción/i), { target: { value: 'Descripción de la tarea' } });
+        fireEvent.change(screen.getByLabelText(/Fecha de Vencimiento/i), { target: { value: '2024-12-31' } });
+        fireEvent.change(screen.getByLabelText(/Prioridad/i), { target: { value: 'alta' } });
+        fireEvent.change(screen.getByLabelText(/Estado/i), { target: { value: 'pendiente' } });
 
-        fireEvent.click(screen.getByText('Guardar Cambios'));
+        fireEvent.click(screen.getByText(/Guardar Cambios/i));
 
-        await waitFor(() => {
-            expect(onAddTarea).toHaveBeenCalledWith({
-                titulo: 'Tarea de prueba',
-                descripcion: 'Descripción de prueba',
-                fecha_vencimiento: '2024-12-31',
-                prioridad: 'alta',
-                estado: 'pendiente',
-                etiquetas: [],
-            });
+        expect(onAddTarea).toHaveBeenCalledTimes(1);
+        expect(onAddTarea).toHaveBeenCalledWith({
+            titulo: 'Nueva tarea',
+            descripcion: 'Descripción de la tarea',
+            fecha_vencimiento: '2024-12-31',
+            prioridad: 'alta',
+            estado: 'pendiente',
+            etiquetas: []
         });
     });
 
-    it('Muestra un error si el título está vacío', async () => {
+    it('El titulo, fecha de vencimiento y prioridad no pueden estar vacios.', async () => {
         const onAddTarea = vi.fn();
-        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
+        render(<TareaForm onAddTarea={onAddTarea} />);
 
-        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2024-12-31' } });
+        fireEvent.click(screen.getByText(/Guardar Cambios/i));
 
-        fireEvent.click(screen.getByText('Guardar Cambios'));
-
-        await waitFor(() => {
-            expect(screen.getByText('Título es requerido')).toBeVisible();
-            expect(onAddTarea).not.toHaveBeenCalled();
-        });
+        expect(onAddTarea).not.toHaveBeenCalled();
     });
 
-    it('Muestra un error si la fecha de vencimiento está vacía', async () => {
-        const onAddTarea = vi.fn();
-        render(<TareaForm onAddTarea={onAddTarea} showToast={vi.fn()} />);
-
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
-
-        fireEvent.click(screen.getByText('Guardar Cambios'));
-
+    it('La fecha de vencimiento no debe ser anterior a la fecha actual.', async () => {
+        render(<TareaForm onAddTarea={() => { }} />);
+    
+        // Obtener la fecha actual en formato YYYY-MM-DD
+        const today = new Date();
+        const year = today.getFullYear();
+        let month = today.getMonth() + 1;
+        let day = today.getDate() - 1; // Establecer la fecha de vencimiento como ayer
+    
+        month = month < 10 ? '0' + month : month;
+        day = day < 10 ? '0' + day : day;
+    
+        const yesterday = `${year}-${month}-${day}`;
+    
+        fireEvent.change(screen.getByLabelText(/Título/i), { target: { value: 'Tarea con fecha pasada' } });
+        fireEvent.change(screen.getByLabelText(/Fecha de Vencimiento/i), { target: { value: yesterday } });
+        fireEvent.change(screen.getByLabelText(/Prioridad/i), { target: { value: 'alta' } });
+    
+        fireEvent.click(screen.getByText(/Guardar Cambios/i));
+    
+        // Verificar si el mensaje de error está presente
         await waitFor(() => {
-            expect(screen.getByText('Fecha de vencimiento es requerida')).toBeVisible();
-            expect(onAddTarea).not.toHaveBeenCalled();
-        });
-    });
-
-    it('La fecha de vencimiento no debe ser anterior a la fecha actual', async () => {
-        render(<TareaForm onAddTarea={vi.fn()} showToast={vi.fn()} />);
-
-        fireEvent.change(screen.getByLabelText('Título'), { target: { value: 'Tarea de prueba' } });
-        fireEvent.change(screen.getByLabelText('Fecha de Vencimiento'), { target: { value: '2020-01-01' } });
-
-        fireEvent.click(screen.getByText('Guardar Cambios'));
-
-        await waitFor(() => {
-            expect(screen.getByText('La fecha de vencimiento no puede ser menor a la fecha actual.')).toBeVisible();
+            expect(screen.getByText(/La fecha de vencimiento no puede ser menor a la fecha actual./i)).toBeInTheDocument();
         });
     });
 });

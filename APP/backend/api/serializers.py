@@ -34,6 +34,12 @@ class TareaSerializer(serializers.ModelSerializer):
             'etiquetas', 
             'usuario'
         ]
+    def validate_estado(self, value):
+        # Si se envía vacío, retorna el valor por defecto
+        if value == '':
+            return 'pendiente'
+        return value
+        
     def validate_fecha_vencimiento(self, value):
         if not self.instance and value.date() < date.today():
             raise serializers.ValidationError("La fecha de vencimiento no puede ser menor a la fecha actual.")

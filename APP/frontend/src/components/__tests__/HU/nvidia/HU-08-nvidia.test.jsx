@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-08-nvidia.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../Home';
+import Home from '../../../../pages/Home';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -15,63 +15,63 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-08: Ordenar Tareas', () => {
-    it(' ordena tareas por prioridad', async () => {
-        // Mock API response con tareas
-        api.get.mockResolvedValue({
+    beforeEach(() => {
+        // Mockear API para obtener tareas
+        vi.mocked(api.get).mockResolvedValue({
             data: [
-                { id: 1, titulo: 'Tarea 1', prioridad: 'alta' },
-                { id: 2, titulo: 'Tarea 2', prioridad: 'media' },
-                { id: 3, titulo: 'Tarea 3', prioridad: 'baja' },
+                { id: 1, titulo: 'Tarea 1', prioridad: 'alta', fecha_vencimiento: '2024-03-16' },
+                { id: 2, titulo: 'Tarea 2', prioridad: 'media', fecha_vencimiento: '2024-03-15' },
+                { id: 3, titulo: 'Tarea 3', prioridad: 'baja', fecha_vencimiento: '2024-03-17' },
             ],
         });
 
+        // Renderizar componente Home dentro de BrowserRouter
         render(
             <BrowserRouter>
                 <Home />
             </BrowserRouter>
         );
-
-        // Esperar a que se carguen las tareas
-        await waitFor(() => screen.getByText('Tarea 1'));
-
-        // Click en el botón de ordenar por prioridad
-        const prioridadButton = screen.getByText('Ordenar por Prioridad');
-        fireEvent.click(prioridadButton);
-
-        // Verificar que las tareas estén ordenadas por prioridad
-        const tareaList = screen.getAllByRole('article');
-        expect(tareaList[0]).toHaveTextContent('Tarea 1 - Alta');
-        expect(tareaList[1]).toHaveTextContent('Tarea 2 - Media');
-        expect(tareaList[2]).toHaveTextContent('Tarea 3 - Baja');
     });
 
-    it('ordena tareas por fecha de vencimiento', async () => {
-        // Mock API response con tareas
-        api.get.mockResolvedValue({
-            data: [
-                { id: 1, titulo: 'Tarea 1', fecha_vencimiento: '2024-03-15' },
-                { id: 2, titulo: 'Tarea 2', fecha_vencimiento: '2024-03-10' },
-                { id: 3, titulo: 'Tarea 3', fecha_vencimiento: '2024-03-20' },
-            ],
-        });
-
-        render(
-            <BrowserRouter>
-                <Home />
-            </BrowserRouter>
-        );
-
+    it('El usuario puede ordenar por prioridad', async () => {
         // Esperar a que se carguen las tareas
         await waitFor(() => screen.getByText('Tarea 1'));
 
-        // Click en el botón de ordenar por fecha de vencimiento
-        const fechaButton = screen.getByText('Ordenar por Fecha');
-        fireEvent.click(fechaButton);
+        // Obtener botones de ordenar
+        const orderByPriorityButton = screen.getByText('Ordenar por Prioridad');
+        const orderByDateButton = screen.getByText('Ordenar por Fecha');
 
-        // Verificar que las tareas estén ordenadas por fecha de vencimiento
-        const tareaList = screen.getAllByRole('article');
-        expect(tareaList[0]).toHaveTextContent('Tarea 2 - 2024-03-10');
-        expect(tareaList[1]).toHaveTextContent('Tarea 1 - 2024-03-15');
-        expect(tareaList[2]).toHaveTextContent('Tarea 3 - 2024-03-20');
+        // Ordenar por prioridad de alta a baja
+        fireEvent.click(orderByPriorityButton);
+        expect(screen.getByText('Tarea 1')).HandlerContext.toHaveTextContent('alta'); // Alta
+        expect(screen.getByText('Tarea 2')).HandlerContext.toHaveTextContent('media'); // Media
+        expect(screen.getByText('Tarea 3')).HandlerContext.toHaveTextContent('baja'); // Baja
+
+        // Ordenar por prioridad de baja a alta
+        fireEvent.click(orderByPriorityButton); // Desc
+        expect(screen.getByText('Tarea 3')).HandlerContext.toHaveTextContent('baja'); // Baja
+        expect(screen.getByText('Tarea 2')).HandlerContext.toHaveTextContent('media'); // Media
+        expect(screen.getByText('Tarea 1')).HandlerContext.toHaveTextContent('alta'); // Alta
+    });
+
+    it('El usuario puede ordenar por fecha de vencimiento', async () => {
+        // Esperar a que se carguen las tareas
+        await waitFor(() => screen.getByText('Tarea 1'));
+
+        // Obtener botones de ordenar
+        const orderByPriorityButton = screen.getByText('Ordenar por Prioridad');
+        const orderByDateButton = screen.getByText('Ordenar por Fecha');
+
+        // Ordenar por fecha de vencimiento de más cercana a más lejana
+        fireEvent.click(orderByDateButton);
+        expect(screen.getByText('Tarea 2')).HandlerContext.toHaveTextContent('15'); // Más cercana
+        expect(screen.getByText('Tarea 1')).HandlerContext.toHaveTextContent('16');
+        expect(screen.getByText('Tarea 3')).HandlerContext.toHaveTextContent('17'); // Más lejana
+
+        // Ordenar por fecha de vencimiento de más lejana a más cercana
+        fireEvent.click(orderByDateButton); // Desc
+        expect(screen.getByText('Tarea 3')).HandlerContext.toHaveTextContent('17'); // Más lejana
+        expect(screen.getByText('Tarea 1')).HandlerContext.toHaveTextContent('16');
+        expect(screen.getByText('Tarea 2')).HandlerContext.toHaveTextContent('15'); // Más cercana
     });
 });

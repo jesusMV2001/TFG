@@ -6,64 +6,50 @@ import api from '../../../../api';
 
 vi.mock('../../../../api');
 
-describe('HU-13: Crear comentarios', () => {
+describe('HU-13: Crear Comentarios', () => {
     const tareaId = 1;
 
-    it('Debe renderizar el componente ComentariosList', () => {
-        render(<ComentariosList tareaId={tareaId} onClose={() => { }} />);
+    it('Debería renderizar el componente ComentariosList', () => {
+        render(<ComentariosList tareaId={tareaId} />);
         expect(screen.getByPlaceholderText('Escribe un comentario...')).toBeInTheDocument();
-        expect(screen.getByText('Comentar')).toBeInTheDocument();
     });
 
-    it('No debe permitir crear un comentario vacío', async () => {
-        render(<ComentariosList tareaId={tareaId} onClose={() => { }} />);
+    it('Debería mostrar un mensaje de error si el comentario está vacío', async () => {
+        render(<ComentariosList tareaId={tareaId} />);
         const textareaElement = screen.getByPlaceholderText('Escribe un comentario...');
-        const submitButton = screen.getByText('Comentar');
+        const comentarButton = screen.getByText('Comentar');
 
-        fireEvent.change(textareaElement, { target: { value: '  ' } });
-        fireEvent.click(submitButton);
+        fireEvent.change(textareaElement, { target: { value: '' } });
+        fireEvent.click(comentarButton);
 
         await waitFor(() => {
             expect(screen.getByText('El comentario no puede estar vacío')).toBeInTheDocument();
         });
-
-        expect(api.post).not.toHaveBeenCalled();
     });
 
-    it('Debe permitir crear un comentario y mostrarlo en la lista', async () => {
+    it('Debería llamar a la API para crear un comentario y mostrarlo si la creación es exitosa', async () => {
         const mockComentario = { id: 1, texto: 'Este es un comentario de prueba', usuario: 'testuser', fecha_creacion: new Date().toISOString() };
         api.post.mockResolvedValue({ data: mockComentario });
         api.get.mockResolvedValue({ data: [mockComentario] });
 
-        render(<ComentariosList tareaId={tareaId} onClose={() => { }} />);
+        render(<ComentariosList tareaId={tareaId} />);
         const textareaElement = screen.getByPlaceholderText('Escribe un comentario...');
-        const submitButton = screen.getByText('Comentar');
+        const comentarButton = screen.getByText('Comentar');
 
         fireEvent.change(textareaElement, { target: { value: 'Este es un comentario de prueba' } });
-        fireEvent.click(submitButton);
+        fireEvent.click(comentarButton);
 
         await waitFor(() => {
-            expect(api.post).toHaveBeenCalledWith(`/api/tareas/${tareaId}/comentarios/`, {
-                texto: 'Este es un comentario de prueba',
-                tarea: tareaId
-            });
-        });
-
-        await waitFor(() => {
+            expect(api.post).toHaveBeenCalledWith(`/api/tareas/${tareaId}/comentarios/`, { texto: 'Este es un comentario de prueba', tarea: tareaId });
             expect(screen.getByText('Este es un comentario de prueba')).toBeInTheDocument();
         });
-
     });
 
-    it('Debe mostrar los comentarios existentes', async () => {
+    it('Debería mostrar los comentarios existentes al cargar el componente', async () => {
         const mockComentarios = [{ id: 1, texto: 'Comentario 1', usuario: 'user1', fecha_creacion: new Date().toISOString() }, { id: 2, texto: 'Comentario 2', usuario: 'user2', fecha_creacion: new Date().toISOString() }];
         api.get.mockResolvedValue({ data: mockComentarios });
 
-        render(<ComentariosList tareaId={tareaId} onClose={() => { }} />);
-
-        await waitFor(() => {
-            expect(api.get).toHaveBeenCalledWith(`/api/tareas/${tareaId}/comentarios/`);
-        });
+        render(<ComentariosList tareaId={tareaId} />);
 
         await waitFor(() => {
             expect(screen.getByText('Comentario 1')).toBeInTheDocument();

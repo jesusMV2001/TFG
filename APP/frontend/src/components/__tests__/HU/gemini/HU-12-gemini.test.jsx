@@ -3,68 +3,50 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TareaForm from '../../../TareaForm';
 import api from '../../../../api';
-import { BrowserRouter } from 'react-router-dom';
+import toast from '../../../Toast';
 
 vi.mock('../../../../api');
+vi.mock('sonner', () => ({
+    toast: {
+        success: vi.fn(),
+        error: vi.fn(),
+    },
+}));
 
-describe('HU-12: Eliminar Etiquetas', () => {
-    it('El usuario puede eliminar etiquetas para cada tarea y se muestra un mensaje', async () => {
-        const mockEtiquetas = [
-            { id: 1, nombre: 'Etiqueta 1' },
-            { id: 2, nombre: 'Etiqueta 2' },
-        ];
+describe('HU-12: Eliminar etiquetas', () => {
+    const initialData = {
+        id: 1,
+        titulo: 'Tarea de prueba',
+        descripcion: 'Descripción de prueba',
+        estado: 'pendiente',
+        prioridad: 'media',
+        fecha_vencimiento: '2024-12-31',
+        etiquetas: [{ id: 1, nombre: 'Etiqueta 1' }, { id: 2, nombre: 'Etiqueta 2' }],
+    };
 
-        api.get.mockResolvedValue({ data: mockEtiquetas });
+    it('El usuario puede eliminar etiquetas para cada tarea.', async () => {
+        api.get.mockResolvedValue({ data: initialData.etiquetas });
         api.delete.mockResolvedValue({});
 
-        const showToastMock = vi.fn();
-        render(
-            <BrowserRouter>
-                <TareaForm initialData={{ id: 1, etiquetas: mockEtiquetas }} showToast={showToastMock} />
-            </BrowserRouter>
-        );
+        render(<TareaForm initialData={initialData} onAddTarea={() => { }} showToast={() => { }}/>);
 
-        await waitFor(() => {
-            expect(api.get).toHaveBeenCalledWith('/api/etiquetas/?tarea_id=1');
-        });
+        const deleteButton = await screen.findByText('Eliminar');
+        fireEvent.click(deleteButton);
 
-        const eliminarButtons = await screen.findAllByText('Eliminar');
-        expect(eliminarButtons.length).toBe(2);
-
-        await fireEvent.click(eliminarButtons[0]);
-
-        expect(api.delete).toHaveBeenCalledWith('/api/etiquetas/delete/1/');
-        expect(showToastMock).toHaveBeenCalledWith('Etiqueta eliminada exitosamente');
+        expect(api.delete).toHaveBeenCalledWith(`/api/etiquetas/delete/${initialData.etiquetas[0].id}/`);
     });
 
-    it('Maneja el error al eliminar una etiqueta', async () => {
-        const mockEtiquetas = [
-            { id: 1, nombre: 'Etiqueta 1' },
-        ];
+    it('El sistema debe mostrar un mensaje cuando se elimine una etiqueta de una tarea.', async () => {
+         api.get.mockResolvedValue({ data: initialData.etiquetas });
+        api.delete.mockResolvedValue({});
 
-        api.get.mockResolvedValue({ data: mockEtiquetas });
-        api.delete.mockRejectedValue(new Error('Error al eliminar etiqueta'));
+        render(<TareaForm initialData={initialData} onAddTarea={() => { }} showToast={() => { }}/>);
 
-        const showToastMock = vi.fn();
-        render(
-            <BrowserRouter>
-                <TareaForm initialData={{ id: 1, etiquetas: mockEtiquetas }} showToast={showToastMock} />
-            </BrowserRouter>
-        );
+        const deleteButton = await screen.findByText('Eliminar');
+        fireEvent.click(deleteButton);
 
         await waitFor(() => {
-            expect(api.get).toHaveBeenCalledWith('/api/etiquetas/?tarea_id=1');
+            expect(toast.success).toHaveBeenCalledWith('Etiqueta eliminada exitosamente');
         });
-
-        const eliminarButtons = await screen.findAllByText('Eliminar');
-        expect(eliminarButtons.length).toBe(1);
-
-        await fireEvent.click(eliminarButtons[0]);
-
-        expect(api.delete).toHaveBeenCalledWith('/api/etiquetas/delete/1/');
-        // Ajusta la aserción del toast si muestra el error de la API
-        // o un mensaje genérico de error.
-        // En este caso, verificamos que se llame con un mensaje de error.
-        expect(showToastMock).toHaveBeenCalledWith('No se pudo eliminar la etiqueta.', undefined);
     });
 });

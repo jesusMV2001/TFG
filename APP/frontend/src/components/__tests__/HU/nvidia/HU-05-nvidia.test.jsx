@@ -14,81 +14,71 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
+const tareaInitial = {
+    id: 1,
+    titulo: 'Tarea inicial',
+    descripcion: 'Descripción inicial',
+    estado: 'pendiente',
+    prioridad: 'media',
+    fecha_vencimiento: '2024-03-16',
+    etiquetas: []
+};
+
 describe('HU-05: Editar tarea', () => {
-    const initialData = {
-        id: 1,
-        titulo: 'Tarea de ejemplo',
-        descripcion: 'Descripción de ejemplo',
-        estado: 'pendiente',
-        prioridad: 'media',
-        fecha_vencimiento: '2024-03-16',
-    };
+    it('Permite modificar campos y guardar cambios con éxito', async () => {
+        // Mockear API para retornar éxito al actualizar tarea
+        vi.mocked(api.put).mockResolvedValueOnce({ status: 200, data: { message: 'Tarea actualizada' } });
 
-    it('Editar tarea con éxito', async () => {
-        // Mockear API
-        const apiPatch = vi.fn(() => Promise.resolve({ status: 200 }));
-        api.updateTarea = apiPatch;
-
+        // Renderizar componente con datos iniciales de tarea
         render(
             <BrowserRouter>
-                <TareaForm
-                    onAddTarea={vi.fn()}
-                    initialData={initialData}
-                    showToast={vi.fn()}
-                />
+                <TareaForm onAddTarea={vi.fn()} initialData={tareaInitial} />
             </BrowserRouter>
         );
 
-        // Rellenar formulario
+        // Simular cambios en los campos
         const tituloInput = screen.getByLabelText('Título');
-        fireEvent.change(tituloInput, { target: { value: 'Nuevo título' } });
-
         const descripcionInput = screen.getByLabelText('Descripción');
-        fireEvent.change(descripcionInput, { target: { value: 'Nueva descripción' } });
+        const estadoSelect = screen.getByLabelText('Estado');
+        const prioridadSelect = screen.getByLabelText('Prioridad');
+        const fechaVencimientoInput = screen.getByLabelText('Fecha de Vencimiento');
 
-        // Enviar formulario
-        const guardarCambios-button = screen.getByText('Guardar Cambios');
-        fireEvent.click(guardarCambios-button);
+        fireEvent.change(tituloInput, { target: { value: 'Título modificado' } });
+        fireEvent.change(descripcionInput, { target: { value: 'Descripción modificada' } });
+        fireEvent.change(estadoSelect, { target: { value: 'en_progreso' } });
+        fireEvent.change(prioridadSelect, { target: { value: 'alta' } });
+        fireEvent.change(fechaVencimientoInput, { target: { value: '2024-04-16' } });
 
-        // Esperar respuesta exitosa
-        await waitFor(() => expect(apiPatch).toHaveBeenCalledTimes(1));
+        // Simular envío del formulario
+        const guardarButton = screen.getByRole('button', { name: 'Guardar Cambios' });
+        fireEvent.click(guardarButton);
 
-        // Verificar mensaje de éxito
-        const successMessage = screen.getByText('Tarea actualizada exitosamente');
-        expect(successMessage).toBeInTheDocument();
+        // Esperar y verificar mensaje de éxito
+        await waitFor(() => screen.getByText('Tarea actualizada'));
+        expect(screen.getByText('Tarea actualizada')).toBeInTheDocument();
     });
 
-    it('Editar tarea con error', async () => {
-        // Mockear API
-        const apiPatch = vi.fn(() => Promise.resolve({ status: 400, data: 'Error al actualizar' }));
-        api.updateTarea = apiPatch;
+    it('Muestra mensaje de error al fallar la actualización', async () => {
+        // Mockear API para retornar error al actualizar tarea
+        vi.mocked(api.put).mockRejectedValueOnce({ response: { status: 400, data: { error: 'Error al actualizar' } } });
 
+        // Renderizar componente con datos iniciales de tarea
         render(
             <BrowserRouter>
-                <TareaForm
-                    onAddTarea={vi.fn()}
-                    initialData={initialData}
-                    showToast={vi.fn()}
-                />
+                <TareaForm onAddTarea={vi.fn()} initialData={tareaInitial} />
             </BrowserRouter>
         );
 
-        // Rellenar formulario
+        // Simular cambios en los campos
         const tituloInput = screen.getByLabelText('Título');
-        fireEvent.change(tituloInput, { target: { value: 'Nuevo título' } });
+        fireEvent.change(tituloInput, { target: { value: 'Título modificado' } });
 
-        const descripcionInput = screen.getByLabelText('Descripción');
-        fireEvent.change(descripcionInput, { target: { value: 'Nueva descripción' } });
+        // Simular envío del formulario
+        const guardarButton = screen.getByRole('button', { name: 'Guardar Cambios' });
+        fireEvent.click(guardarButton);
 
-        // Enviar formulario
-        const guardarCambios-button = screen.getByText('Guardar Cambios');
-        fireEvent.click(guardarCambios-button);
-
-        // Esperar respuesta con error
-        await waitFor(() => expect(apiPatch).toHaveBeenCalledTimes(1));
-
-        // Verificar mensaje de error
-        const errorMessage = screen.getByText('Error al actualizar');
-        expect(errorMessage).toBeInTheDocument();
+        // Esperar y verificar mensaje de error
+        await waitFor(() => screen.getByText('Error al actualizar'));
+        expect(screen.getByText('Error al actualizar')).toBeInTheDocument();
     });
 });

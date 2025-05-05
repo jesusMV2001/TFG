@@ -3,67 +3,55 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import ComentariosList from '../../../ComentariosList';
 import api from '../../../../api';
-import { BrowserRouter } from 'react-router-dom';
-import { within } from '@testing-library/dom';
 
 vi.mock('../../../../api');
-vi.mock('react-router-dom', async () => {
-    const actual = await vi.importActual('react-router-dom');
-    return {
-        ...actual,
-        useNavigate: () => vi.fn(),
-    };
-});
 
 describe('HU-15: Eliminar comentarios', () => {
-    const tareaId = 1;
-    const comentarios = [
-        { id: 1, texto: 'Comentario 1', usuario: 'Usuario 1' },
-        { id: 2, texto: 'Comentario 2', usuario: 'Usuario 2' },
+  it('El usuario debe poder eliminar un comentario de una tarea', async () => {
+    // Mockear la respuesta de la API para obtener comentarios
+    const comentariosMock = [
+      { id: 1, texto: 'Comentario 1', tarea: 1 },
+      { id: 2, texto: 'Comentario 2', tarea: 1 },
     ];
+    vi.mocked(api.get).mockResolvedValueOnce({ data: comentariosMock });
 
-    beforeEach(() => {
-        vi.spyOn(api, 'get').mockImplementation((url) => {
-            if (url.includes(`/api/tareas/${tareaId}/comentarios/`)) {
-                return Promise.resolve({ data: comentarios });
-            }
-            return Promise.resolve({});
-        });
+    // Mockear la respuesta de la API para eliminar un comentario
+    vi.mocked(api.delete).mockResolvedValueOnce({ status: 200 });
 
-        vi.spyOn(api, 'delete').mockImplementation((url) => {
-            if (url.includes('/api/comentarios/delete/')) {
-                return Promise.resolve({ status: 204 });
-            }
-            return Promise.resolve({});
-        });
-    });
+    // Renderizar el componente ComentariosList
+    const { container } = render(<ComentariosList tareaId={1} />);
+    await waitFor(() => screen.getByText('Comentario 1'));
+    await waitFor(() => screen.getByText('Comentario 2'));
 
-    it('El usuario debe poder eliminar un comentario de una tarea.', async () => {
-        render(
-            <BrowserRouter>
-                <ComentariosList tareaId={tareaId} onClose={vi.fn()} />
-            </BrowserRouter>
-        );
+    // Simular el clic en el botón de eliminar comentario
+    const eliminarBoton = screen.getAllByRole('button', { name: 'Eliminar' })[0];
+    fireEvent.click(eliminarBoton);
 
-       (await waitFor(() => screen.getByText('Comentario 1'))).\FoundationFocusVisible();
-        const deleteButton = within(screen.getByText('Comentario 1')).getByRole('button', { name: 'Eliminar' });
-        fireEvent.click(deleteButton);
+    // Verificar que el comentario se eliminó de la lista
+    await waitFor(() => expect(screen.queryByText('Comentario 1')).not.toBeInTheDocument());
+  });
 
-        await waitFor(() => expect(api.delete).toHaveBeenCalledTimes(1));
-        expect(api.delete).toHaveBeenCalledWith(`/api/comentarios/delete/1/`);
-    });
+  it('El sistema debe mostrar un mensaje cuando se elimine correctamente el comentario', async () => {
+    // Mockear la respuesta de la API para obtener comentarios
+    const comentariosMock = [
+      { id: 1, texto: 'Comentario 1', tarea: 1 },
+      { id: 2, texto: 'Comentario 2', tarea: 1 },
+    ];
+    vi.mocked(api.get).mockResolvedValueOnce({ data: comentariosMock });
 
-    it('El sistema debe mostrar un mensaje cuando se elimine correctamente el comentario.', async () => {
-        render(
-            <BrowserRouter>
-                <ComentariosList tareaId={tareaId} onClose={vi.fn()} />
-            </BrowserRouter>
-        );
+    // Mockear la respuesta de la API para eliminar un comentario
+    vi.mocked(api.delete).mockResolvedValueOnce({ status: 200, data: { message: 'Comentario eliminado correctamente' } });
 
-        (await waitFor(() => screen.getByText('Comentario 1'))).FoundationFocusVisible();
-        const deleteButton = within(screen.getByText('Comentario 1')).getByRole('button', { name: 'Eliminar' });
-        fireEvent.click(deleteButton);
+    // Renderizar el componente ComentariosList
+    const { container } = render(<ComentariosList tareaId={1} />);
+    await waitFor(() => screen.getByText('Comentario 1'));
+    await waitFor(() => screen.getByText('Comentario 2'));
 
-        await waitFor(() => screen.getByText('Comentario eliminado correctamente.'));
-    });
+    // Simular el clic en el botón de eliminar comentario
+    const eliminarBoton = screen.getAllByRole('button', { name: 'Eliminar' })[0];
+    fireEvent.click(eliminarBoton);
+
+    // Verificar que se muestre el mensaje de éxito
+    await waitFor(() => expect(screen.getByText('Comentario eliminado correctamente')).toBeInTheDocument());
+  });
 });

@@ -1,11 +1,10 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-06-nvidia.test.jsx
-
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Tarea from '../../../Tarea';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
-import { Toast } from '../../../Toast';
+import { within } from '@testing-library/dom';
 
 vi.mock('../../../../api');
 vi.mock('react-router-dom', async () => {
@@ -17,93 +16,75 @@ vi.mock('react-router-dom', async () => {
 });
 
 describe('HU-06: Eliminar tarea', () => {
-    const tarea = {
+    const tareaMock = {
         id: 1,
-        titulo: 'Tarea de ejemplo',
-        descripcion: 'Descripción de ejemplo',
-        fecha_vencimiento: '2024-03-16T14:30:00',
+        titulo: 'Tarea de prueba',
+        descripcion: 'Descripción de la tarea de prueba',
         estado: 'pendiente',
-        prioridad: 'alta',
-        usuario: 'usuario1',
+        prioridad: 'media',
+        fecha_vencimiento: '2024-03-16',
     };
 
-    it('Eliminar tarea - Exitoso', async () => {
-        // Mock API delete
-        const deleteTareaMock = vi.fn(() => Promise.resolve({ status: 204 }));
-        api.delete.mockImplementation(deleteTareaMock);
+    it('debe desaparecer de la lista al eliminar la tarea', async () => {
+        // Mockear la API para eliminar la tarea con éxito
+        api.delete.mockResolvedValueOnce({ status: 204 });
 
         render(
             <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={vi.fn()}
-                    onDragStart={vi.fn()}
-                    onUpdate={vi.fn()}
-                />
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
             </BrowserRouter>
         );
 
-        // Simular clic en botón de eliminar
-        const eliminarBtn = screen.getByRole('button', { name: 'Eliminar' });
+        // Encontrar el botón de eliminar tarea
+        const eliminarBtn = screen.getByRole('button', { name: /eliminar/i });
+        expect(eliminarBtn).toBeInTheDocument();
+
+        // Simular clic en el botón de eliminar
         fireEvent.click(eliminarBtn);
 
-        // Esperar mensaje de éxito
-        await waitFor(() => expect(screen.getByText('Tarea eliminada exitosamente')).toBeInTheDocument());
+        // Esperar a que la tarea desaparezca de la lista
+        await waitFor(() => expect(screen.queryByText(tareaMock.titulo)).not.toBeInTheDocument());
     });
 
-    it('Eliminar tarea - Error', async () => {
-        // Mock API delete con error
-        const deleteTareaMock = vi.fn(() => Promise.reject(new Error('Error al eliminar tarea')));
-        api.delete.mockImplementation(deleteTareaMock);
+    it('debe mostrar un mensaje si se ha borrado la tarea con éxito', async () => {
+        // Mockear la API para eliminar la tarea con éxito
+        api.delete.mockResolvedValueOnce({ status: 204, data: { message: 'Tarea eliminada con éxito' } });
 
         render(
             <BrowserRouter>
-                <Tarea
-                    tarea={tarea}
-                    onDelete={vi.fn()}
-                    onDragStart={vi.fn()}
-                    onUpdate={vi.fn()}
-                />
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
             </BrowserRouter>
         );
 
-        // Simular clic en botón de eliminar
-        const eliminarBtn = screen.getByRole('button', { name: 'Eliminar' });
+        // Encontrar el botón de eliminar tarea
+        const eliminarBtn = screen.getByRole('button', { name: /eliminar/i });
+        expect(eliminarBtn).toBeInTheDocument();
+
+        // Simular clic en el botón de eliminar
         fireEvent.click(eliminarBtn);
 
-        // Esperar mensaje de error
+        // Esperar a que aparezca el mensaje de éxito
+        await waitFor(() => expect(screen.getByText('Tarea eliminada con éxito')).toBeInTheDocument());
+    });
+
+    it('debe mostrar un mensaje de error en caso de fallo al eliminar la tarea', async () => {
+        // Mockear la API para eliminar la tarea con error
+        api.delete.mockRejectedValueOnce({ response: { status: 500, data: { error: 'Error al eliminar la tarea' } } });
+
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
+            </BrowserRouter>
+        );
+
+        // Encontrar el botón de eliminar tarea
+        const eliminarBtn = screen.getByRole('button', { name: /eliminar/i });
+        expect(eliminarBtn).toBeInTheDocument();
+
+        // Simular clic en el botón de eliminar
+        fireEvent.click(eliminarBtn);
+
+        // Esperar a que aparezca el mensaje de error
         await waitFor(() => expect(screen.getByText('Error al eliminar la tarea')).toBeInTheDocument());
-    });
-
-    it('Eliminar tarea - Desaparece de la lista', async () => {
-        // Render con lista de tareas
-        const tareas = [tarea, { id: 2, titulo: 'Otra tarea' }];
-        render(
-            <BrowserRouter>
-                <div>
-                    {tareas.map((t) => (
-                        <Tarea
-                            key={t.id}
-                            tarea={t}
-                            onDelete={vi.fn()}
-                            onDragStart={vi.fn()}
-                            onUpdate={vi.fn()}
-                        />
-                    ))}
-                    <Toast message="" type="success" onClose={vi.fn()} />
-                </div>
-            </BrowserRouter>
-        );
-
-        // Simular clic en botón de eliminar
-        const eliminarBtn = screen.getAllByRole('button', { name: 'Eliminar' })[0];
-        fireEvent.click(eliminarBtn);
-
-        // Mock API delete con éxito
-        const deleteTareaMock = vi.fn(() => Promise.resolve({ status: 204 }));
-        api.delete.mockImplementation(deleteTareaMock);
-
-        // Esperar que la tarea desaparezca
-        await waitFor(() => expect(screen.queryByText(tarea.titulo)).not.toBeInTheDocument());
     });
 });

@@ -73,7 +73,8 @@ def save_test(current_type, current_code, ruta_frontend_test, ruta_backend_test,
             # Directorio de backend
             backend_dir = os.path.join(ruta_backend_test, tipo_requisito, llm)
             os.makedirs(backend_dir, exist_ok=True)
-            backend_path = os.path.join(backend_dir, f"{requisito_id}-{llm}.py")
+            file_name = f"test_{requisito_id}_{llm}.py"
+            backend_path = os.path.join(backend_dir, file_name.replace('-', '_'))
             with open(backend_path, 'w', encoding='utf-8') as f:
                 f.write(code_content)
             logger.info(f"Test backend generado: {backend_path}")

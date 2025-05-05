@@ -3,81 +3,58 @@ import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import TareaForm from '../../../TareaForm';
 import api from '../../../../api';
-import { BrowserRouter } from 'react-router-dom';
-import { within } from '@testing-library/react';
 
 vi.mock('../../../../api');
-vi.mock('react-router-dom', async () => {
-    const actual = await vi.importActual('react-router-dom');
-    return {
-        ...actual,
-        useNavigate: () => vi.fn(),
-    };
-});
 
 describe('HU-12: Eliminar etiquetas', () => {
     beforeEach(() => {
-        // Mock de API para devolver una tarea con etiquetas
-        vi.mocked(api).get.mockResolvedValue({
+        // Mockear API para devolver una tarea con etiquetas
+        api.get.mockResolvedValueOnce({
             data: {
                 id: 1,
-                titulo: 'Tarea de prueba',
+                titulo: 'Tarea de Prueba',
                 etiquetas: [
                     { id: 1, nombre: 'Etiqueta 1' },
-                    { id: 2, nombre: 'Etiqueta 2' },
-                ],
-            },
+                    { id: 2, nombre: 'Etiqueta 2' }
+                ]
+            }
         });
+
+        // Mockear la eliminación de etiquetas
+        api.delete.mockResolvedValueOnce({ status: 204 });
     });
 
-    it('El usuario puede eliminar etiquetas para cada tarea', async () => {
-        const { getByText, getByRole } = render(
-            <BrowserRouter>
-                <TareaForm onAddTarea={vi.fn()} initialData={{ id: 1 }} />
-            </BrowserRouter>
-        );
+    it('El usuario puede eliminar etiquetas para cada tarea.', async () => {
+        render(<TareaForm initialData={{ id: 1 }} />);
 
-        // Acceder a la lista de etiquetas
-        const etiquetasList = await screen.findByRole('list', { name: 'Etiquetas' });
-        const { getAllByRole } = within(etiquetasList);
+        // Esperar a que se carguen las etiquetas
+        await waitFor(() => screen.getByText('Etiqueta 1'));
+        await waitFor(() => screen.getByText('Etiqueta 2'));
 
-        // Obtener botones de eliminar
-        const deleteButtons = getAllByRole('button', { name: 'Eliminar' });
+        // Encontrar el botón para eliminar la primera etiqueta
+        const eliminarEtiquetaBtn = screen.getAllByText('Eliminar')[0];
 
-        // Simular clicks en los botones de eliminar
-        for (const button of deleteButtons) {
-            fireEvent.click(button);
-        }
+        // Simular el clic en el botón de eliminar
+        fireEvent.click(eliminarEtiquetaBtn);
 
-        // Verificar que las etiquetas hayan desaparecido
-        await waitFor(() => {
-            expect(getAllByRole('listitem')).toHaveLength(0);
-        });
+        // Verificar que la etiqueta ya no esté visible
+        await waitFor(() => expect(screen.queryByText('Etiqueta 1')).not.toBeInTheDocument());
     });
 
-    it('El sistema debe mostrar un mensaje cuando se elimine una etiqueta de una tarea', async () => {
-        vi.mocked(api).delete.mockResolvedValue({ status: 204 });
+    it('El sistema debe mostrar un mensaje cuando se elimine una etiqueta de una tarea.', async () => {
+        render(<TareaForm initialData={{ id: 1 }} />);
 
-        const { getByText, getByRole } = render(
-            <BrowserRouter>
-                <TareaForm onAddTarea={vi.fn()} initialData={{ id: 1 }} />
-            </BrowserRouter>
-        );
+        // Esperar a que se carguen las etiquetas
+        await waitFor(() => screen.getByText('Etiqueta 1'));
+        await waitFor(() => screen.getByText('Etiqueta 2'));
 
-        // Acceder a la lista de etiquetas
-        const etiquetasList = await screen.findByRole('list', { name: 'Etiquetas' });
-        const { getAllByRole } = within(etiquetasList);
+        // Encontrar el botón para eliminar la primera etiqueta
+        const eliminarEtiquetaBtn = screen.getAllByText('Eliminar')[0];
 
-        // Obtener botones de eliminar
-        const deleteButtons = getAllByRole('button', { name: 'Eliminar' });
+        // Simular el clic en el botón de eliminar
+        fireEvent.click(eliminarEtiquetaBtn);
 
-        // Simular click en el primer botón de eliminar
-        fireEvent.click(deleteButtons[0]);
-
-        // Esperar a que aparezca el mensaje de confirmación
-        const toast = await screen.findByRole('alert');
-
-        // Verificar el mensaje
-        expect(toast).toHaveTextContent('Etiqueta eliminada exitosamente');
+        // Verificar que se muestre el mensaje de éxito
+        await waitFor(() => expect(screen.getByText('Etiqueta eliminada exitosamente')).toBeInTheDocument());
     });
 });

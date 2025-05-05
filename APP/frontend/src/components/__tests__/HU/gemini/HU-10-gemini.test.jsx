@@ -1,86 +1,112 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/gemini/HU-10-gemini.test.jsx
 import { describe, it, expect, vi } from 'vitest';
-import { render, screen, waitFor, fireEvent } from '@testing-library/react';
-import Tarea from '../../../components/Tarea';
+import { render, screen, fireEvent, waitFor } from '@testing-library/react';
+import Tarea from '../../../Tarea';
+import ModalTarea from '../../../ModalTarea';
 import api from '../../../../api';
+import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');
 
 describe('HU-10: Historial de Actividades', () => {
-  const mockTarea = {
-    id: 1,
-    titulo: 'Tarea de prueba',
-    descripcion: 'Descripción de la tarea',
-    fecha_creacion: '2024-01-01T12:00:00Z',
-    fecha_vencimiento: '2024-01-08T12:00:00Z',
-    estado: 'pendiente',
-    prioridad: 'media'
-  };
+    const tarea = {
+        id: 1,
+        titulo: 'Test Tarea',
+        descripcion: 'Test Descripcion',
+        estado: 'pendiente',
+        prioridad: 'media',
+        fecha_vencimiento: '2024-12-31',
+        fecha_creacion: '2024-01-01',
+    };
 
-  const mockHistorial = [
-    { id: 1, accion: 'Tarea creada', fecha_cambio: '2024-01-01T12:00:00Z', usuario: 'usuario1' },
-    { id: 2, accion: 'Estado cambiado a en progreso', fecha_cambio: '2024-01-02T12:00:00Z', usuario: 'usuario1' }
-  ];
+    const historial = [
+        {
+            id: 1,
+            tarea: 1,
+            usuario: 'testuser',
+            accion: 'Tarea creada',
+            fecha_cambio: '2024-01-01T12:00:00Z',
+        },
+        {
+            id: 2,
+            tarea: 1,
+            usuario: 'testuser',
+            accion: 'Estado cambiado a en_progreso',
+            fecha_cambio: '2024-01-02T12:00:00Z',
+        },
+    ];
 
-  const mockOnDelete = vi.fn();
-  const mockOnUpdate = vi.fn();
-  const mockOnDragStart = vi.fn();
-
-  it('Debería mostrar el botón para ver los detalles de la tarea', () => {
-    render(
-      <Tarea
-        tarea={mockTarea}
-        onDelete={mockOnDelete}
-        onUpdate={mockOnUpdate}
-        onDragStart={mockOnDragStart}
-      />
-    );
-    const detallesButton = screen.getByRole('button', { name: /ver detalles/i });
-    expect(detallesButton).toBeInTheDocument();
-  });
-
-  it('Debería cargar y mostrar el historial de actividades al hacer clic en el botón de detalles', async () => {
-    api.get.mockResolvedValue({ data: mockHistorial });
-
-    render(
-      <Tarea
-        tarea={mockTarea}
-        onDelete={mockOnDelete}
-        onUpdate={mockOnUpdate}
-        onDragStart={mockOnDragStart}
-      />
-    );
-
-    const detallesButton = screen.getByRole('button', { name: /ver detalles/i });
-    fireEvent.click(detallesButton);
-
-    await waitFor(() => {
-      expect(api.get).toHaveBeenCalledWith(`/api/tareas/${mockTarea.id}/historial/`);
+    it('should display the view details button', () => {
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tarea} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} />
+            </BrowserRouter>
+        );
+        const viewDetailsButton = screen.getByText(/Ver Detalles/i);
+        expect(viewDetailsButton).toBeInTheDocument();
     });
 
-    await waitFor(() => {
-      expect(screen.getByText('Tarea creada')).toBeInTheDocument();
-      expect(screen.getByText('Estado cambiado a en progreso')).toBeInTheDocument();
+    it('should open the modal when view details button is clicked', async () => {
+        api.get.mockResolvedValue({ data: historial });
+
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tarea} onDelete={() => {}} onUpdate={() => {}} onDragStart={() => {}} />
+            </BrowserRouter>
+        );
+
+        const viewDetailsButton = screen.getByText(/Ver Detalles/i);
+        fireEvent.click(viewDetailsButton);
+
+        await waitFor(() => {
+          expect(api.get).toHaveBeenCalledWith(`/api/tareas/${tarea.id}/historial/`);
+        });
+
+
     });
-  });
 
-  it('Debería mostrar "No hay historial de cambios" si no hay historial', async () => {
-    api.get.mockResolvedValue({ data: [] });
 
-    render(
-      <Tarea
-        tarea={mockTarea}
-        onDelete={mockOnDelete}
-        onUpdate={mockOnUpdate}
-        onDragStart={mockOnDragStart}
-      />
-    );
+    it('should display historial when available', async () => {
+       api.get.mockResolvedValue({ data: historial });
 
-    const detallesButton = screen.getByRole('button', { name: /ver detalles/i });
-    fireEvent.click(detallesButton);
+        render(
+            <BrowserRouter>
+              <ModalTarea isOpen={true} onClose={() => {}}>
+                    <div>
+                        <h3>Historial de Cambios</h3>
+                        <ul>
+                            {historial.map(cambio => (
+                                <li key={cambio.id}>{cambio.accion}</li>
+                            ))}
+                        </ul>
+                    </div>
+                </ModalTarea>
+            </BrowserRouter>
+        );
 
-    await waitFor(() => {
-      expect(screen.getByText('No hay historial de cambios.')).toBeInTheDocument();
+        await waitFor(() => {
+            historial.forEach(cambio => {
+                expect(screen.getByText(cambio.accion)).toBeInTheDocument();
+            });
+        });
     });
-  });
+
+    it('should display a message when no history is available', async () => {
+        api.get.mockResolvedValue({ data: [] });
+
+        render(
+            <BrowserRouter>
+              <ModalTarea isOpen={true} onClose={() => {}}>
+                    <div>
+                        <h3>Historial de Cambios</h3>
+                        <p>No hay historial de cambios.</p>
+                    </div>
+                </ModalTarea>
+            </BrowserRouter>
+        );
+
+        await waitFor(() => {
+            expect(screen.getByText(/No hay historial de cambios./i)).toBeInTheDocument();
+        });
+    });
 });

@@ -7,82 +7,69 @@ import api from '../../../../api';
 vi.mock('../../../../api');
 
 describe('HU-11: Crear y asignar etiquetas', () => {
-    it('El usuario puede crear y asignar etiquetas para cada tarea', async () => {
-        const mockTareaId = 1;
-        api.get.mockResolvedValue({ data: [] });
-        api.post.mockResolvedValue({ data: { id: 1, nombre: 'Etiqueta de prueba' } });
+  it('El usuario puede crear etiquetas y asignar a una tarea existente', async () => {
+    const mockTareaId = 1;
+    const mockEtiquetaNombre = 'Etiqueta de prueba';
+    const mockEtiquetaResponse = { id: 1, nombre: mockEtiquetaNombre };
+    const showToastMock = vi.fn();
+    api.post.mockResolvedValue({ data: mockEtiquetaResponse });
+    api.delete.mockResolvedValue({});
 
-        render(<TareaForm initialData={{ id: mockTareaId }} showToast={vi.fn()}/>);
+    render(<TareaForm initialData={{ id: mockTareaId }} onAddTarea={() => {}} showToast={showToastMock} />);
 
-        const nuevaEtiquetaInput = screen.getByPlaceholderText('Nueva etiqueta');
-        const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
+    const nuevaEtiquetaInput = screen.getByPlaceholderText('Nueva etiqueta');
+    fireEvent.change(nuevaEtiquetaInput, { target: { value: mockEtiquetaNombre } });
 
-        fireEvent.change(nuevaEtiquetaInput, { target: { value: 'Etiqueta de prueba' } });
-        fireEvent.click(crearEtiquetaButton);
+    const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
+    fireEvent.click(crearEtiquetaButton);
 
-        await waitFor(() => {
-            expect(api.post).toHaveBeenCalledWith('/api/etiquetas/', { nombre: 'Etiqueta de prueba', tarea_id: mockTareaId });
-        });
-
+    await waitFor(() => {
+      expect(api.post).toHaveBeenCalledWith('/api/etiquetas/', { nombre: mockEtiquetaNombre, tarea_id: mockTareaId });
+      expect(screen.getByText(mockEtiquetaNombre)).toBeInTheDocument();
+      expect(showToastMock).toHaveBeenCalledWith("Etiqueta creada exitosamente");
     });
 
-    it('El sistema debe mostrar un mensaje cuando se cree una etiqueta a una tarea.', async () => {
-        const mockTareaId = 1;
-        const showToastMock = vi.fn();
+    const eliminarEtiquetaButton = screen.getByText('Eliminar');
+    fireEvent.click(eliminarEtiquetaButton);
 
-        api.get.mockResolvedValue({ data: [] });
-        api.post.mockResolvedValue({ data: { id: 1, nombre: 'Etiqueta de prueba' } });
-
-        render(<TareaForm initialData={{ id: mockTareaId }} showToast={showToastMock} />);
-
-        const nuevaEtiquetaInput = screen.getByPlaceholderText('Nueva etiqueta');
-        const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
-
-        fireEvent.change(nuevaEtiquetaInput, { target: { value: 'Etiqueta de prueba' } });
-        fireEvent.click(crearEtiquetaButton);
-
-        await waitFor(() => {
-            expect(showToastMock).toHaveBeenCalledWith("Etiqueta creada exitosamente");
-        });
+    await waitFor(() => {
+      expect(api.delete).toHaveBeenCalledWith(`/api/etiquetas/delete/${mockEtiquetaResponse.id}/`);
+      expect(showToastMock).toHaveBeenCalledWith("Etiqueta eliminada exitosamente");
     });
 
-    it('Muestra un error si el nombre de la etiqueta está vacío', async () => {
-        const mockTareaId = 1;
-        const showToastMock = vi.fn();
+  });
 
-        api.get.mockResolvedValue({ data: [] });
-        api.post.mockResolvedValue({ data: { id: 1, nombre: 'Etiqueta de prueba' } });
+  it('Muestra un mensaje de error si el nombre de la etiqueta esta vacio', async () => {
+    const showToastMock = vi.fn();
+    const setErrorMock = vi.fn();
+    render(<TareaForm initialData={{ id: 1 }} onAddTarea={() => {}} showToast={showToastMock} />);
 
-        render(<TareaForm initialData={{ id: mockTareaId }} showToast={showToastMock} />);
+    const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
+    fireEvent.click(crearEtiquetaButton);
 
-        const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
-        fireEvent.click(crearEtiquetaButton);
-
-        await waitFor(() => {
-            expect(screen.getByText('El nombre de la etiqueta no puede estar vacío.')).toBeInTheDocument();
-        });
+    await waitFor(() => {
+      expect(screen.getByText('El nombre de la etiqueta no puede estar vacío.')).toBeInTheDocument();
     });
+  });
 
-    it('Muestra un error si la etiqueta ya existe', async () => {
-        const mockTareaId = 1;
-        const showToastMock = vi.fn();
+  it('Muestra un mensaje de error si la etiqueta ya existe', async () => {
+    const mockTareaId = 1;
+    const mockEtiquetaNombre = 'Etiqueta de prueba';
+    const mockEtiquetaResponse = { id: 1, nombre: mockEtiquetaNombre };
+    const showToastMock = vi.fn();
+    api.post.mockResolvedValue({ data: mockEtiquetaResponse });
+    api.delete.mockResolvedValue({});
 
-        api.get.mockResolvedValue({ data: [] });
-        api.post.mockResolvedValue({ data: { id: 1, nombre: 'Etiqueta de prueba' } });
+    render(<TareaForm initialData={{ id: mockTareaId, etiquetas: [{id:1, nombre:mockEtiquetaNombre}] }} onAddTarea={() => {}} showToast={showToastMock} />);
 
-        render(<TareaForm initialData={{ id: mockTareaId }} showToast={showToastMock} />);
+    const nuevaEtiquetaInput = screen.getByPlaceholderText('Nueva etiqueta');
+    fireEvent.change(nuevaEtiquetaInput, { target: { value: mockEtiquetaNombre } });
 
-        const nuevaEtiquetaInput = screen.getByPlaceholderText('Nueva etiqueta');
-        const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
+    const crearEtiquetaButton = screen.getByText('Crear Etiqueta');
+    fireEvent.click(crearEtiquetaButton);
 
-        fireEvent.change(nuevaEtiquetaInput, { target: { value: 'Etiqueta de prueba' } });
-        api.post.mockRejectedValue({response: {data: {error: "La etiqueta ya existe."}}});
-        fireEvent.click(crearEtiquetaButton);
-
-         await waitFor(() => {
-           // expect(showToastMock).toHaveBeenCalledWith('La etiqueta ya existe.', 'error');
-            
-        });
-
+    await waitFor(() => {
+      expect(screen.getByText('La etiqueta ya existe.')).toBeInTheDocument();
     });
+  });
 });

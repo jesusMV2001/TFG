@@ -1,10 +1,8 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/HU/nvidia/HU-10-nvidia.test.jsx
-
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import Tarea from '../../../Tarea';
 import ModalTarea from '../../../ModalTarea';
-import ComentariosList from '../../../ComentariosList';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -17,57 +15,96 @@ vi.mock('react-router-dom', async () => {
     };
 });
 
-describe('HU-10 - Historial de Actividades', () => {
-    const tarea = {
-        id: 1,
-        titulo: 'Tarea de Ejemplo',
-        descripcion: 'Descripción de la tarea',
-        fecha_creacion: '2024-03-10T14:30:00',
-        fecha_vencimiento: '2024-03-15T14:30:00',
-        estado: 'pendiente',
-        prioridad: 'alta',
-        usuario: 'usuario_prueba',
-        historial: [
-            { id: 1, accion: 'Creación', fecha_cambio: '2024-03-10T14:30:00', usuario: 'usuario_prueba' },
-            { id: 2, accion: 'Actualización de Estado a En Progreso', fecha_cambio: '2024-03-12T10:00:00', usuario: 'usuario_prueba' },
-        ],
-    };
+const tareaMock = {
+    id: 1,
+    titulo: "Tarea de Prueba",
+    descripcion: "Esta es una tarea de prueba",
+    estado: "pendiente",
+    prioridad: "media",
+    fecha_vencimiento: "2024-03-20",
+    historial: [
+        {
+            id: 1,
+            accion: "Creada",
+            fecha_cambio: "2024-03-15",
+            usuario: "Usuario de Prueba"
+        },
+        {
+            id: 2,
+            accion: "Actualizada",
+            fecha_cambio: "2024-03-16",
+            usuario: "Usuario de Prueba"
+        }
+    ]
+};
 
-    const renderComponent = () => {
-        return render(
+describe('HU-10 - Historial de Actividades', () => {
+    it('Muestra el botón para ver detalles de la tarea', async () => {
+        render(
             <BrowserRouter>
-                <Tarea tarea={tarea} onDelete={vi.fn()} onDragStart={vi.fn()} onUpdate={vi.fn()} />
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
             </BrowserRouter>
         );
-    };
 
-    it('Muestra el botón para ver detalles de la tarea', () => {
-        renderComponent();
-        expect(screen.getByRole('button', { name: 'Ver Detalles' })).toBeInTheDocument();
+        const detalleButton = await screen.findByRole('button', { name: 'Ver Detalles' });
+
+        expect(detalleButton).toBeInTheDocument();
     });
 
-    it('Muestra el historial de cambios al clicar en "Ver Detalles"', async () => {
-        renderComponent();
+    it('Abre el modal con el historial de cambios al clicar en "Ver Detalles"', async () => {
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
+            </BrowserRouter>
+        );
 
-        const detallesButton = await screen.findByRole('button', { name: 'Ver Detalles' });
-        fireEvent.click(detallesButton);
+        const detalleButton = await screen.findByRole('button', { name: 'Ver Detalles' });
+        fireEvent.click(detalleButton);
 
-        await waitFor(() => {
-            expect(screen.getByText('Historial de Cambios')).toBeInTheDocument();
-            expect(screen.getByText(tarea.historial[0].accion)).toBeInTheDocument();
-            expect(screen.getByText(tarea.historial[1].accion)).toBeInTheDocument();
-        });
+        const modal = await screen.findByComponent(ModalTarea);
+        expect(modal).toBeInTheDocument();
     });
 
-    it('Muestra la fecha y hora de cada cambio en el historial', async () => {
-        renderComponent();
+    it('Muestra el historial de cambios en el modal', async () => {
+        vi.mocked(api.get).mockResolvedValueOnce({ data: tareaMock.historial });
 
-        const detallesButton = await screen.findByRole('button', { name: 'Ver Detalles' });
-        fireEvent.click(detallesButton);
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
+            </BrowserRouter>
+        );
 
-        await waitFor(() => {
-            expect(screen.getByText('2024-03-10 14:30:00')).toBeInTheDocument();
-            expect(screen.getByText('2024-03-12 10:00:00')).toBeInTheDocument();
+        const detalleButton = await screen.findByRole('button', { name: 'Ver Detalles' });
+        fireEvent.click(detalleButton);
+
+        const historialList = await screen.findByRole('list');
+        expect(historialList).toBeInTheDocument();
+
+        const historialItems = await screen.findAllByRole('listitem');
+        expect(historialItems).toHaveLength(tareaMock.historial.length);
+    });
+
+    it('Muestra la acción, fecha y usuario para cada cambio en el historial', async () => {
+        vi.mocked(api.get).mockResolvedValueOnce({ data: tareaMock.historial });
+
+        render(
+            <BrowserRouter>
+                <Tarea tarea={tareaMock} onDelete={vi.fn()} onUpdate={vi.fn()} onDragStart={vi.fn()} />
+            </BrowserRouter>
+        );
+
+        const detalleButton = await screen.findByRole('button', { name: 'Ver Detalles' });
+        fireEvent.click(detalleButton);
+
+        const historialItems = await screen.findAllByRole('listitem');
+        historialItems.forEach((item, index) => {
+            const accion = screen.getByText(tareaMock.historial[index].accion, { selector: 'p' });
+            const fecha = screen.getByText(tareaMock.historial[index].fecha_cambio, { selector: 'span' });
+            const usuario = screen.getByText(tareaMock.historial[index].usuario, { selector: 'p' });
+
+            expect(accion).toBeInTheDocument();
+            expect(fecha).toBeInTheDocument();
+            expect(usuario).toBeInTheDocument();
         });
     });
 });

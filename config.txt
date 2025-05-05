@@ -1,5 +1,5 @@
-LLM = nvidia
-prompt = prompt_todo.txt
+LLM = mistral
+prompt = prompt_frontend.txt
 requisitos = HU
 ruta_general = /home/jesus/python/TFG/
 ruta_backend_test = /home/jesus/python/TFG/APP/backend/api/tests/
