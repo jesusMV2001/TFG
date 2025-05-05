@@ -2,8 +2,8 @@ import pytest
 from django.core.exceptions import ValidationError
 from rest_framework import status
 from rest_framework.test import APIClient
-from .models import User
-from .serializers import UserSerializer
+from api.models import User
+from api.serializers import UserSerializer
 
 @pytest.mark.django_db
 def test_registro_usuario_correo_existente():

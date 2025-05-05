@@ -2,11 +2,11 @@
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import UsuarioForm from '../../../UsuarioForm';
-import Login from '../../../pages/Login';
-import App from '../../../App';
+import Login from '../../../../pages/Login';
+import App from '../../../../App';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import api from '../../../../api';
-import ProtectedRoute from '../../../components/ProtectedRoute';
+import ProtectedRoute from '../../../../components/ProtectedRoute';
 
 vi.mock('../../../../api');
 vi.mock('react-router-dom', async () => {

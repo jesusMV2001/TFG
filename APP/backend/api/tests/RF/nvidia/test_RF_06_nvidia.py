@@ -5,7 +5,7 @@ from rest_framework import status
 from rest_framework.authtoken.models import Token
 from rest_framework.test import APITestCase, APIClient
 from django.contrib.auth.models import User
-from ..models import Tarea
+from api.models import Tarea
 
 class TestTareaListado(APITestCase):
 
@@ -26,7 +26,7 @@ class TestTareaListado(APITestCase):
         self.client = APIClient()
         self.client.credentials(HTTP_AUTHORIZATION='Token ' + self.token.key)
 
-    def test_listado_tareas CreateMap_propio_usuario(self):
+    def test_listado_tareasCreate_Map_propio_usuario(self):
         # Verificar listado de tareas del usuario autenticado
         response = self.client.get(reverse('tarea-list-create'))
         self.assertEqual(response.status_code, status.HTTP_200_OK)

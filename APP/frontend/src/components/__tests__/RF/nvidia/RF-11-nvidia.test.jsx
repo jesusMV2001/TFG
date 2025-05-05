@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/nvidia/RF-11-nvidia.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../Home';
+import Home from '../../../../pages/Home';
 import api from '../../../../api';
 
 vi.mock('../../../../api');

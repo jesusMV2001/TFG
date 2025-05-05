@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/gemini/RF-10-gemini.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../pages/Home';
+import Home from '../../../../pages/Home';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
 

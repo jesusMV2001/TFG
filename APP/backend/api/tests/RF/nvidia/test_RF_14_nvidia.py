@@ -1,7 +1,7 @@
 from rest_framework import status
 from rest_framework.test import APITestCase, APIClient
 from django.urls import reverse
-from .models import Tarea, Etiqueta, User
+from api.models import Tarea, Etiqueta, User
 
 class TestEtiquetaCreacionAsignacion(APITestCase):
 

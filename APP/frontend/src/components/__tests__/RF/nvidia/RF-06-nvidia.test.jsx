@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/nvidia/RF-06-nvidia.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, waitFor } from '@testing-library/react';
-import Home from '../../../Home';
+import Home from '../../../../pages/Home';
 import api from '../../../../api';
 import { BrowserRouter, Routes, Route } from 'react-router-dom';
 import ProtectedRoute from '../../../ProtectedRoute';

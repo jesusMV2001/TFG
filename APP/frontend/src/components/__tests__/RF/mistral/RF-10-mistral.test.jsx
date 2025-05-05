@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/mistral/RF-10-mistral.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../Home';
+import Home from '../../../../pages/Home';
 import { BrowserRouter } from 'react-router-dom';
 
 vi.mock('../../../../api');

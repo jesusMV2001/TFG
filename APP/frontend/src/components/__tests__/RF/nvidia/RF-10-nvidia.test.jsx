@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/nvidia/RF-10-nvidia.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Home from '../../../Home';
+import Home from '../../../../pages/Home';
 import api from '../../../../api';
 import { BrowserRouter } from 'react-router-dom';
 
@@ -34,7 +34,7 @@ describe('RF-10: Ordenar tareas por prioridad o fecha de vencimiento', () => {
         );
 
         expect(screen.getByText('Ordenar por Prioridad')).toBeInTheDocument();
-        expect(screen.getByText('Ordenar por Fecha")).toBeInTheDocument();
+        expect(screen.getByText('Ordenar por Fecha')).toBeInTheDocument();
     });
 
     it('Debe ordenar tareas por prioridad de manera ascendente por defecto', async () => {

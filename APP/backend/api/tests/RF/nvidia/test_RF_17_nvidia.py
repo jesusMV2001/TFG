@@ -1,8 +1,8 @@
 from rest_framework import status
 from rest_framework.test import APITestCase
 from django.urls import reverse
-from .models import Tarea, Comentario, User
-from .serializers import ComentarioSerializer
+from api.models import Tarea, Comentario, User
+from api.serializers import ComentarioSerializer
 
 class TestRF17ComentarioNoVacio(APITestCase):
 

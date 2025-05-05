@@ -4,7 +4,7 @@ import { render, screen, fireEvent, waitFor } from '@testing-library/react';
 import UsuarioForm from '../../../UsuarioForm';
 import api from '../../../../api';
 import { BrowserRouter, useNavigate } from 'react-router-dom';
-import Home from '../../../pages/Home';
+import Home from '../../../../pages/Home';
 
 vi.mock('../../../../api');
 

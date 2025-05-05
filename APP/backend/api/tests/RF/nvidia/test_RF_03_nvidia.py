@@ -39,7 +39,7 @@ class TestRF03(TestCase):
             'password': '123456789'
         }
         response = self.client.post(self.url, data, format='json')
-        self.assertEqual(response.status_code, status.HTTP_201 CREATED)
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
 
     def test_validacion_contrasena_within_serializer(self):
         # Verificar que la validación se realice dentro del serializer

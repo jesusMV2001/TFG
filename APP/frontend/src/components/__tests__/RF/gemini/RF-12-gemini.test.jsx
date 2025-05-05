@@ -1,7 +1,7 @@
 // /home/jesus/python/TFG/APP/frontend/src/components/__tests__/RF/gemini/RF-12-gemini.test.jsx
 import { describe, it, expect, vi } from 'vitest';
 import { render, screen, fireEvent, waitFor } from '@testing-library/react';
-import Tarea from '../../../components/Tarea';
+import Tarea from '../../../../components/Tarea';
 import api from '../../../../api';
 
 vi.mock('../../../../api');

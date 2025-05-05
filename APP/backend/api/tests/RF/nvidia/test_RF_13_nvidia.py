@@ -1,7 +1,7 @@
 from django.test import TestCase, Client
 from django.urls import reverse
 from rest_framework import status
-from .models import Tarea, HistorialCambios, User
+from api.models import Tarea, HistorialCambios, User
 from datetime import datetime
 
 class TestRF13HistorialCambios(TestCase):
